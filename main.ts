@@ -4,7 +4,7 @@ import * as fs from 'fs-extra';
 import * as chokidar from 'chokidar';
 
 // กำหนด path ต้นทางและปลายทาง
-const destDir = path.join(__dirname, 'view/lib');
+const destDir = path.join(__dirname, 'view/src/lib');
 const sourceDir = path.join(__dirname, 'lib/src');
 
 // สร้างโฟลเดอร์ปลายทางถ้ายังไม่มี

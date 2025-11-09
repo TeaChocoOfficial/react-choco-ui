@@ -5,7 +5,8 @@
     "main": "index.js",
     "scripts": {
         "build": "tsx main.ts",
-        "dev": "concurrently -n \"Build,Libart,View\" -c \"green,blue,yellow\"  \"tsx main.ts\" \"cd lib && pnpm dev\" \"cd view && pnpm dev\"",
+        "ins": "concurrently -n \"Build,Libart,View\" -c \"#00ff00,#0000ff,#ffff00\"  \"pnpm i --save\" \"cd lib && pnpm i --save\" \"cd view && pnpm i --save\"",
+        "dev": "concurrently -n \"Build,Libart,View,Storybook\" -c \"#00ff00,#0000ff,#ffff00,#ff69b4\"  \"tsx main.ts\" \"cd lib && pnpm dev\" \"cd view && pnpm dev\" \"cd view && pnpm storybook\"",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "keywords": [],
