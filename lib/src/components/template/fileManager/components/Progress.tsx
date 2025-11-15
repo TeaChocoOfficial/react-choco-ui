@@ -1,10 +1,26 @@
 //-Path: "react-choco-ui/lib/src/components/template/fileManager/components/Progress.tsx"
 import './Progress.scss';
-import { createUi } from '$/custom/test/createUi';
+import { ChocoUi } from '$Type/Choco';
+import { customUi } from '$/custom/customUi';
 import { useTranslation } from '$Hook/fileManager/context/TranslationProvider';
 
-export const Progress = createUi(
-    ({ percent = 0, isCanceled = false, isCompleted = false, error }) => {
+export type ProgressType = ChocoUi.Ui<
+    'div',
+    {
+        error?: React.ReactNode;
+        percent?: number;
+        isCanceled?: boolean;
+        isCompleted?: boolean;
+    }
+>;
+
+export const Progress = customUi<ProgressType>(
+    'div',
+    'Progress',
+)(
+    ({
+        props: { percent = 0, isCanceled = false, isCompleted = false, error },
+    }) => {
         const t = useTranslation();
 
         return (
@@ -33,4 +49,4 @@ export const Progress = createUi(
             </div>
         );
     },
-);
+)();

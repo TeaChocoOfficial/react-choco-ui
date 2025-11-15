@@ -3,10 +3,10 @@ import './styles/FileList.scss';
 import { tw } from '$/config/utils';
 import { ChocoUi } from '$Type/Choco';
 import { CFileItem } from './CFileItem';
-import { createUi } from '$/custom/test/createUi';
+import { customUi } from '$/custom/customUi';
 import { CFilesHeader } from './CFilesHeader';
 import { CActivity } from '$Compo/config/CActivity';
-import { useFileList } from './fileList/useFileList';
+import { useFileList } from '../../../hooks/fileManager/hook/useFileList';
 import { ContextMenu } from './components/ContextMenu';
 import { FileManager } from '$Hook/fileManager/fileManager';
 import { useLayout } from '$Hook/fileManager/context/Layout';
@@ -30,9 +30,12 @@ export type CFileListType = ChocoUi.Ui<
     }
 >;
 
-export const CFileList = createUi<CFileListType>(
-    (
-        {
+export const CFileList = customUi<CFileListType>(
+    'div',
+    'CFileList',
+)(
+    ({
+        props: {
             icons,
             actions,
             onRename,
@@ -46,8 +49,8 @@ export const CFileList = createUi<CFileListType>(
             enableFilePreview,
             ...props
         },
-        filesViewRef,
-    ) => {
+        ref: filesViewRef,
+    }) => {
         const t = useTranslation();
         const { activeLayout } = useLayout();
         const { currentPathFiles, sortConfig, setSortConfig } =
@@ -188,5 +191,4 @@ export const CFileList = createUi<CFileListType>(
             </div>
         );
     },
-    'CFileList',
-);
+)();

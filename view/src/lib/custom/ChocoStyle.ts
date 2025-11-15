@@ -1,11 +1,19 @@
 //-Path: "react-choco-ui/lib/src/custom/ChocoStyle.ts"
-import { useTheme } from '$/theme/useTheme';
 import { ChocoUi } from '$Type/Choco';
+import { CColor } from './color/CColor';
+import { useTheme } from '$/theme/useTheme';
 import { Ary, Obj } from '@teachoco-dev/cli';
+import { ChocoShade } from './color/ChocoShade';
+
+export type ApplyData = { key: string | null; value: string };
+
+export type ApplyDatas = Partial<
+    Record<ChocoUi.Data.StyleKeysValue, Record<string, ApplyData>>
+>;
 
 export class ChocoStyle {
-    cs: ChocoUi.Emotion.InterpolationObject;
-    spacingKeys: (keyof ChocoUi.Props)[] = [
+    cs: ChocoUi.Style.CSS = {};
+    static spacingKeys: (keyof ChocoUi.Cs)[] = [
         'm',
         'mt',
         'ml',
@@ -20,15 +28,45 @@ export class ChocoStyle {
         'pb',
         'py',
         'px',
+        'g',
+        'gx',
+        'gy',
+        'borR',
+        'borRBL',
+        'borRBR',
+        'borRTL',
+        'borRTR',
+        'fontS',
     ];
-    applyKeys: {
-        [key in keyof ChocoUi.Props]?:
-            | ChocoUi.Emotion.CSSOthers
-            | keyof ChocoUi.Emotion.CSSOthers
-            | (keyof ChocoUi.Emotion.CSSOthers)[]
-            | ((value: ChocoUi.Props[key]) => ChocoUi.Emotion.CSSOthers);
+    static applyKeys: {
+        [key in keyof ChocoUi.Cs]:
+            | ChocoUi.Style.CSSOthers
+            | keyof ChocoUi.Style.CSSOthers
+            | (keyof ChocoUi.Style.CSSOthers)[]
+            | ((value: ChocoUi.Cs[key]) => ChocoUi.Style.CSSOthers);
     } = {
-        // Spacing - Margin
+        op: 'opacity',
+        z: 'zIndex',
+        // === NEW: Shadow Properties ===
+        bShadow: 'boxShadow',
+        tShadow: 'textShadow',
+
+        // === NEW: Inset Properties (Positioning) ===
+        i: 'inset',
+        t: 'top',
+        b: 'bottom',
+        l: 'left',
+        r: 'right',
+        x: (value) => ({
+            left: value,
+            right: value,
+        }),
+        y: (value) => ({
+            top: value,
+            bottom: value,
+        }),
+
+        // === UPDATED: Spacing - Margin ===
         m: 'margin',
         mt: 'marginTop',
         ml: 'marginLeft',
@@ -37,7 +75,7 @@ export class ChocoStyle {
         my: ['marginTop', 'marginBottom'],
         mx: ['marginLeft', 'marginRight'],
 
-        // Spacing - Padding
+        // === UPDATED: Spacing - Padding ===
         p: 'padding',
         pt: 'paddingTop',
         pl: 'paddingLeft',
@@ -46,7 +84,107 @@ export class ChocoStyle {
         py: ['paddingTop', 'paddingBottom'],
         px: ['paddingLeft', 'paddingRight'],
 
-        // Dimensions - Width & Height
+        // === NEW: Gap Properties ===
+        g: 'gap',
+        gx: 'columnGap',
+        gy: 'rowGap',
+
+        // === NEW: Border Properties ===
+        borW: 'borderWidth',
+        borR: 'borderRadius',
+        borRTL: 'borderTopLeftRadius',
+        borRTR: 'borderTopRightRadius',
+        borRBL: 'borderBottomLeftRadius',
+        borRBR: 'borderBottomRightRadius',
+        borS: 'borderStyle',
+        borClr: 'borderColor',
+
+        // === NEW: Complex Border Properties ===
+        br: (value) => {
+            if (typeof value === 'object' && value !== null) {
+                // TODO: fix this value
+                return {
+                    borderWidth: value.width,
+                    borderColor: value.color,
+                    borderStyle: value.style,
+                } as ChocoUi.Style.CSSOthers;
+            }
+            return { border: value ?? undefined };
+        },
+        brT: (value) => {
+            if (typeof value === 'object' && value !== null) {
+                return {
+                    borderTopWidth: value.width,
+                    borderTopColor: value.color,
+                    borderTopStyle: value.style,
+                } as ChocoUi.Style.CSSOthers;
+            }
+            return { borderTop: value ?? undefined };
+        },
+        brB: (value) => {
+            if (typeof value === 'object' && value !== null) {
+                return {
+                    borderBottomWidth: value.width,
+                    borderBottomColor: value.color,
+                    borderBottomStyle: value.style,
+                } as ChocoUi.Style.CSSOthers;
+            }
+            return { borderBottom: value ?? undefined };
+        },
+        brL: (value) => {
+            if (typeof value === 'object' && value !== null) {
+                return {
+                    borderLeftWidth: value.width,
+                    borderLeftColor: value.color,
+                    borderLeftStyle: value.style,
+                } as ChocoUi.Style.CSSOthers;
+            }
+            return { borderLeft: value ?? undefined };
+        },
+        brR: (value) => {
+            if (typeof value === 'object' && value !== null) {
+                return {
+                    borderRightWidth: value.width,
+                    borderRightColor: value.color,
+                    borderRightStyle: value.style,
+                } as ChocoUi.Style.CSSOthers;
+            }
+            return { borderRight: value ?? undefined };
+        },
+        brX: (value) => {
+            if (typeof value === 'object' && value !== null) {
+                return {
+                    borderLeftWidth: value.width,
+                    borderLeftColor: value.color,
+                    borderLeftStyle: value.style,
+                    borderRightWidth: value.width,
+                    borderRightColor: value.color,
+                    borderRightStyle: value.style,
+                } as ChocoUi.Style.CSSOthers;
+            }
+            return {
+                borderLeft: value ?? undefined,
+                borderRight: value ?? undefined,
+            };
+        },
+        brY: (value) => {
+            if (typeof value === 'object' && value !== null) {
+                return {
+                    borderTopWidth: value.width,
+                    borderTopColor: value.color,
+                    borderTopStyle: value.style,
+                    borderBottomWidth: value.width,
+                    borderBottomColor: value.color,
+                    borderBottomStyle: value.style,
+                } as ChocoUi.Style.CSSOthers;
+            }
+            return {
+                borderTop: value ?? undefined,
+                borderBottom: value ?? undefined,
+            };
+        },
+
+        // === UPDATED: Dimensions - Width & Height ===
         w: 'width',
         h: 'height',
         wh: (value) => ({
@@ -54,7 +192,7 @@ export class ChocoStyle {
             height: value,
         }),
 
-        // Min Dimensions
+        // === UPDATED: Min Dimensions ===
         minH: 'minHeight',
         minW: 'minWidth',
         minWh: (value) => ({
@@ -62,7 +200,7 @@ export class ChocoStyle {
             minHeight: value,
         }),
 
-        // Max Dimensions
+        // === UPDATED: Max Dimensions ===
         maxH: 'maxHeight',
         maxW: 'maxWidth',
         maxWh: (value) => ({
@@ -70,84 +208,169 @@ export class ChocoStyle {
             maxHeight: value,
         }),
 
-        // Full Size
+        // === NEW: Typography Properties ===
+        fontS: 'fontSize',
+        fontF: 'fontFamily',
+        fontW: 'fontWeight',
+        txtTf: 'textTransform',
+        txtDr: 'textDecoration',
+
+        // === NEW: Transition & Transform ===
+        delay: 'transitionDelay',
+        trans: 'transform',
+
+        // === NEW: Content ===
+        coten: 'content',
+
+        // === UPDATED: Full Size ===
         full: { width: '100%', height: '100%' },
-        wFull: { width: '100%' },
-        hFull: { height: '100%' },
+        fullW: { width: '100%' },
+        fullH: { height: '100%' },
 
-        // Screen Size
+        // === UPDATED: Screen Size ===
         screen: { width: '100vw', height: '100vh' },
-        wScreen: { width: '100vw' },
-        hScreen: { height: '100vh' },
+        screenW: { width: '100vw' },
+        screenH: { height: '100vh' },
 
-        // Display
-        flex: { display: 'flex' },
-        block: { display: 'block' },
-
-        // Colors
+        // === UPDATED: Colors ===
         bg: 'background',
         clr: 'color',
         bgClr: 'backgroundColor',
     };
-    constructor(styles: unknown) {
-        this.cs = styles as ChocoUi.Emotion.InterpolationObject;
-        if (this.cs && typeof this.cs === 'object') {
-            this.processStyles();
-        } else {
-            console.log('this not object', this.cs);
+
+    static applyDatas: ApplyDatas = {
+        display: ChocoUi.Data.display,
+        flexDirection: ChocoUi.Data.flexDir,
+        alignContent: ChocoUi.Data.alignContent,
+        alignItems: ChocoUi.Data.alignItems,
+        justifyContent: ChocoUi.Data.justifyContent,
+        justifyItems: ChocoUi.Data.justifyItems,
+        textAlign: ChocoUi.Data.textAlign,
+        position: ChocoUi.Data.pos,
+        overflow: ChocoUi.Data.overflow,
+        pointerEvents: ChocoUi.Data.event,
+        cursor: ChocoUi.Data.cursor,
+        userSelect: ChocoUi.Data.userSelect,
+        boxSizing: ChocoUi.Data.boxSizing,
+    };
+
+    constructor(styles: ChocoUi.Style.CS) {
+        if (styles) {
+            if (Ary.is(styles))
+                this.cs = (styles as ChocoUi.Style.ArrayCSSInterpolation).map(
+                    (style) => {
+                        const chocoStyle = new ChocoStyle(style);
+                        return chocoStyle.cs;
+                    },
+                );
+            if (typeof styles === 'function') {
+                const theme = useTheme();
+                const chocoStyle = new ChocoStyle(styles(theme));
+                this.cs = chocoStyle.cs;
+            }
+            if (typeof styles === 'object') {
+                this.cs = { ...styles } as ChocoUi.Style.CSSObject;
+                this.processStyles(this.cs as ChocoUi.Style.CSSObject);
+            }
         }
     }
 
-    private spacing(value: ChocoUi.CSS): ChocoUi.CSS {
+    private spacing(value: ChocoUi.Style.CSS): ChocoUi.Style.CSS {
         if (typeof value !== 'number') return value;
         const theme = useTheme();
         return value * theme.responsive.spacing;
     }
 
-    private processStyles() {
-        const keys = Obj.keys(this.cs);
+    private processStyles(cs: ChocoUi.Style.CSSObject) {
+        const keys = Obj.keys(cs);
 
         keys.forEach((key) => {
-            const keyProp = key as keyof ChocoUi.Props;
-            const isSpacing = Boolean(
-                this.spacingKeys.find((key) => key === keyProp),
+            const keyProp = key as keyof ChocoUi.Cs;
+            const keyData = key as keyof ChocoUi.Style.CSSOthers;
+
+            const hasKey = Obj.reduce<
+                ApplyDatas,
+                ChocoUi.Data.StyleKeysValue | null
+            >(
+                ChocoStyle.applyDatas,
+                (acc, dataKey, value) =>
+                    value && key in value ? dataKey : acc,
+                null,
             );
-            const mapping = this.applyKeys[keyProp];
-            const value = this.cs[key];
+            const datas = hasKey
+                ? ChocoStyle.applyDatas[hasKey]?.[keyData]
+                : null;
 
-            console.log(isSpacing);
-            const setSpacing = (value: ChocoUi.CSS): ChocoUi.CSS =>
-                isSpacing ? this.spacing(value) : value;
+            const mapping = ChocoStyle.applyKeys[keyProp];
+            const value = cs[key];
+            const isSpacing = Boolean(
+                ChocoStyle.spacingKeys.find((key) => key === keyProp),
+            );
 
-            if (mapping) {
+            const responseValue = (
+                value: ChocoUi.Style.CSS,
+            ): ChocoUi.Style.CSS => {
+                if (isSpacing) return this.spacing(value);
+                if (value instanceof CColor || value instanceof ChocoShade)
+                    return value.hex();
+                return value;
+            };
+
+            if (hasKey && datas) {
+                cs[hasKey as keyof ChocoUi.Style.CSSObject] = datas.value;
+                delete cs[key];
+            } else if (mapping) {
                 if (Ary.is(mapping)) {
                     mapping.forEach(
                         (map) =>
-                            (this.cs[map as keyof typeof this.cs] =
-                                setSpacing(value)), // กำหนดค่าให้ property ใหม่
+                            (cs[map as keyof typeof cs] = responseValue(value)), // กำหนดค่าให้ property ใหม่
                     );
-                    delete this.cs[key]; // ลบ key เดิมหลังจากกำหนดค่าทั้งหมดแล้ว
+                    delete cs[key]; // ลบ key เดิมหลังจากกำหนดค่าทั้งหมดแล้ว
                 } else if (typeof mapping === 'function') {
                     // Handle function mappings (for complex values)
                     const result = (
                         mapping as (
-                            value: ChocoUi.CSS,
-                        ) => ChocoUi.Emotion.CSSOthers
+                            value: ChocoUi.Style.CSS,
+                        ) => ChocoUi.Style.CSSOthers
                     )(value);
-                    Object.assign(this.cs, result);
+                    Object.assign(cs, result);
                 } else if (typeof mapping === 'string') {
                     // Handle string mappings (simple key-value)
-                    this.cs[mapping]; //= setSpacing(value);
-                    delete this.cs[key];
-                } else {
-                    if (value === true) {
-                        Obj.map(
-                            mapping,
-                            (value, mapKey) =>
-                                (this.cs[mapKey as keyof typeof this.cs] =
-                                    setSpacing(value as ChocoUi.CSS)),
+                    cs[mapping as keyof typeof this.cs] = responseValue(value);
+                    delete cs[key];
+                } else if (value === true) {
+                    Obj.map(
+                        mapping,
+                        (value, mapKey) =>
+                            (cs[mapKey as keyof typeof this.cs] =
+                                responseValue(value)),
+                    );
+                    delete cs[key];
+                }
+            } else if (typeof value === 'object' && value !== null) {
+                const chocoStyle = new ChocoStyle(value);
+                cs[key] = chocoStyle.cs;
+            } else {
+                const isData = key in ChocoUi.Data.styleKeys;
+                if (isData) {
+                    const styleKey: ChocoUi.Data.StyleKeysValue =
+                        ChocoUi.Data.styleKeys[key as ChocoUi.Data.StyleKeys];
+                    const applyData = ChocoStyle.applyDatas[styleKey];
+                    if (applyData) {
+                        const data = Obj.reduce<
+                            Record<string, ApplyData>,
+                            ApplyData | null
+                        >(
+                            applyData,
+                            (acc, _, cssValue) =>
+                                cssValue.key === value ? cssValue : acc,
+                            null,
                         );
-                        delete this.cs[key];
+                        if (data) {
+                            cs[styleKey as keyof ChocoUi.Style.CSSObject] =
+                                data.value;
+                            delete cs[key];
+                        }
                     }
                 }
             }

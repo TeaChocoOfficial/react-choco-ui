@@ -1,9 +1,7 @@
 //-Path: "react-choco-ui/lib/src/components/ui/CText.tsx"
-import { UiTypes } from '$Type/ui';
-import { createUi } from '$/custom/test/createUi';
+import { ChocoUi } from '$Type/Choco';
+import { customUi } from '$/custom/customUi';
 
-export type CTextType = UiTypes<'p'>;
+export type CTextType = ChocoUi.Ui<'p'>;
 
-export const CText = createUi<CTextType>(({ ...props }, ref) => {
-    return <p ref={ref} {...props} />;
-}, 'CText');
+export const CText = customUi<CTextType>('p', 'CText')()();

@@ -5,7 +5,7 @@ import { CFileList } from './CFileList';
 import { useMemo, useState } from 'react';
 import { CBreadCrumb } from './CBreadCrumb';
 import { Loader } from './components/Loader';
-import { createUi } from '$/custom/test/createUi';
+import { customUi } from '$/custom/customUi';
 import { Actions } from './components/Actions';
 import { Toolbar } from './components/Toolbar';
 import { Locales } from '$Hook/fileManager/locales';
@@ -65,9 +65,12 @@ export type CFileManagerType = ChocoUi.Ui<
     }
 >;
 
-export const CFileManager = createUi<CFileManagerType>(
-    (
-        {
+export const CFileManager = customUi<CFileManagerType>(
+    'main',
+    'CFileManager',
+)(
+    ({
+        props: {
             style,
             className,
             maxFileSize,
@@ -110,7 +113,7 @@ export const CFileManager = createUi<CFileManagerType>(
             ...props
         },
         ref,
-    ) => {
+    }) => {
         const [isNavigationPaneOpen, setNavigationPaneOpen] =
             useState(defaultNavExpanded);
         const triggerAction = useTriggerAction();
@@ -264,5 +267,4 @@ export const CFileManager = createUi<CFileManagerType>(
             </main>
         );
     },
-    'CFileManager',
-);
+)();

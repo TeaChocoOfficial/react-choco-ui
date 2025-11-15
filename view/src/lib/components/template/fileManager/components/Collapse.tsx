@@ -1,15 +1,18 @@
 //-Path: "react-choco-ui/lib/src/components/template/fileManager/components/Collapse.tsx"
-import { UiTypes } from '$Type/ui';
+import { ChocoUi } from '$Type/Choco';
 import { useState, useEffect } from 'react';
-import { createUi } from '$/custom/test/createUi';
+import { customUi } from '$/custom/customUi';
 import { useCollapse } from 'react-collapsed';
 
-export type CollapseType = UiTypes<
+export type CollapseType = ChocoUi.Ui<
     'div',
     { open: boolean; children?: React.ReactNode }
 >;
 
-export const Collapse = createUi<CollapseType>(({ open, children }) => {
+export const Collapse = customUi<CollapseType>(
+    'div',
+    'Collapse',
+)(({ props: { open, children } }) => {
     const [isExpanded, setExpanded] = useState(open);
     const { getCollapseProps } = useCollapse({
         isExpanded,
@@ -21,4 +24,4 @@ export const Collapse = createUi<CollapseType>(({ open, children }) => {
     }, [open, setExpanded]);
 
     return <div {...getCollapseProps()}>{children}</div>;
-}, 'Collapse');
+})();

@@ -1,13 +1,13 @@
 //-Path: "react-choco-ui/lib/src/components/template/fileManager/components/Actions.tsx"
+import { Modal } from './Modal';
 import { useEffect, useState } from 'react';
+import { DeleteAction } from '../actions/Delete';
+import { UploadFileAction } from '../actions/UploadFile';
+import { PreviewFileAction } from '../actions/PreviewFile';
 import { FileManager } from '$Hook/fileManager/fileManager';
 import { useSelection } from '$Hook/fileManager/context/Selection';
 import { useTranslation } from '$Hook/fileManager/context/TranslationProvider';
-import { Modal } from './Modal';
 import { useShortcutHandler } from '$Hook/fileManager/hook/useShortcutHandler';
-import { UploadFileAction } from '../actions/UploadFile';
-import { PreviewFileAction } from '../actions/PreviewFile';
-import { DeleteAction } from '../actions/Delete';
 
 interface FileUploadConfig {
     url: string;

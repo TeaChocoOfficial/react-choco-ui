@@ -1,9 +1,7 @@
 //-Path: "react-choco-ui/lib/src/components/ui/CProgress.tsx"
-import { UiTypes } from '$Type/ui';
-import { createUi } from '$/custom/test/createUi';
+import { ChocoUi } from '$Type/Choco';
+import { customUi } from '$/custom/customUi';
 
-export type CProgressType = UiTypes;
+export type CProgressType = ChocoUi.Ui<'div'>;
 
-export const CProgress = createUi<CProgressType>(({ ...props }, ref) => {
-    return <div ref={ref} {...props} />;
-}, 'CProgress');
+export const CProgress = customUi<CProgressType>('div', 'CProgress')()();

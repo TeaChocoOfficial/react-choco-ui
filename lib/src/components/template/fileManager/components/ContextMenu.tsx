@@ -1,12 +1,12 @@
 //-Path: "react-choco-ui/lib/src/components/template/fileManager/components/ContextMenu.tsx"
 import './ContextMenu.scss';
-import { UiTypes } from '$Type/ui';
+import { ChocoUi } from '$Type/Choco';
 import { SetState } from '$Type/Type';
-import { createUi } from '$/custom/test/createUi';
+import { customUi } from '$/custom/customUi';
 import { CIcon } from '$Compo/template/CIcon';
-import { FileManager } from '$Hook/fileManager/fileManager';
 import { SubMenu, SubMenuType } from './SubMenu';
 import { useEffect, useRef, useState } from 'react';
+import { FileManager } from '$Hook/fileManager/fileManager';
 
 interface ClickPosition {
     clickX: number;
@@ -21,13 +21,16 @@ interface ContextMenuProps {
     filesViewRef: React.RefObject<HTMLDivElement>;
 }
 
-export type ContextMenuType = UiTypes<'div', ContextMenuProps>;
+export type ContextMenuType = ChocoUi.Ui<'div', ContextMenuProps>;
 
-export const ContextMenu = createUi<ContextMenuType>(
-    (
-        { visible, menuItems, setVisible, filesViewRef, clickPosition },
-        contextMenuRef,
-    ) => {
+export const ContextMenu = customUi<ContextMenuType>(
+    'div',
+    'ContextMenu',
+)(
+    ({
+        props: { visible, menuItems, setVisible, filesViewRef, clickPosition },
+        ref: contextMenuRef,
+    }) => {
         const [left, setLeft] = useState<string>('0');
         const [top, setTop] = useState<string>('0');
         const [activeSubMenuIndex, setActiveSubMenuIndex] = useState<
@@ -180,5 +183,4 @@ export const ContextMenu = createUi<ContextMenuType>(
         }
         return null;
     },
-    'ContextMenu',
-);
+)();

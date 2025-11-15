@@ -3,7 +3,7 @@ import './Modal.scss';
 import { useEffect } from 'react';
 import { ChocoUi } from '$Type/Choco';
 import { SetState } from '$Type/Type';
-import { createUi } from '$/custom/test/createUi';
+import { customUi } from '$/custom/customUi';
 import { CIcon } from '$Compo/template/CIcon';
 import { useTranslation } from '$Hook/fileManager/context/TranslationProvider';
 
@@ -19,9 +19,12 @@ export type ModalType = ChocoUi.Ui<
     }
 >;
 
-export const Modal = createUi<ModalType>(
-    (
-        {
+export const Modal = customUi<ModalType>(
+    'dialog',
+    'Modal',
+)(
+    ({
+        props: {
             show,
             setShow,
             heading,
@@ -31,7 +34,7 @@ export const Modal = createUi<ModalType>(
             ...props
         },
         ref,
-    ) => {
+    }) => {
         const t = useTranslation();
 
         const handleKeyDown: React.KeyboardEventHandler<HTMLDialogElement> = (
@@ -74,4 +77,4 @@ export const Modal = createUi<ModalType>(
             </dialog>
         );
     },
-);
+)();

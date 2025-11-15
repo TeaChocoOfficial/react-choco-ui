@@ -2,7 +2,7 @@
 
 # @teachoco-official/react-choco-ui
 
-A React component library for building modern UI, inspired by Tailwind.
+A React component library for building modern UI, inspired by @emotion/styled.
 
 ## Status
 

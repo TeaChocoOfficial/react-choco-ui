@@ -20,7 +20,7 @@ export namespace OBJ {
 
     export const find = <Object extends object>(
         object: Object,
-        method: (value: Object[keyof Object], key: keyof Object) => boolean,
+        method: (value: Object[keyof Object], key: keyof Object) => boolean | undefined,
     ): boolean => {
         const objKeys = keys(object);
         for (const key of objKeys) {

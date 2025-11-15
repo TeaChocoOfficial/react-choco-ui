@@ -4,7 +4,4 @@ import { customUi } from '$/custom/customUi';
 
 export type CBoxType = ChocoUi.Ui;
 
-export const CBox = customUi<CBoxType>(
-    'div',
-    'CBox',
-)(({ props, Element, ref }) => <Element ref={ref} {...props} />)();
+export const CBox = customUi<CBoxType>('div', 'CBox')()();

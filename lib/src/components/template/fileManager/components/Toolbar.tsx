@@ -2,7 +2,7 @@
 import './Toolbar.scss';
 import { useState } from 'react';
 import { ChocoUi } from '$Type/Choco';
-import { createUi } from '$/custom/test/createUi';
+import { customUi } from '$/custom/customUi';
 import { CIcon } from '$Compo/template/CIcon';
 import { LayoutToggler } from './LayoutToggler';
 import { FileManager } from '$Hook/fileManager/fileManager';
@@ -22,8 +22,14 @@ export type ToolbarType = ChocoUi.Ui<
     }
 >;
 
-export const Toolbar = createUi<ToolbarType>(
-    ({ onLayoutChange, onRefresh, triggerAction, permissions }, ref) => {
+export const Toolbar = customUi<ToolbarType>(
+    'div',
+    'Toolbar',
+)(
+    ({
+        props: { onLayoutChange, onRefresh, triggerAction, permissions },
+        ref,
+    }) => {
         const [showToggleViewMenu, setShowToggleViewMenu] = useState(false);
         const { currentFolder } = useFileNavigation();
         const { selectedFiles, setSelectedFiles, handleDownload } =
@@ -228,5 +234,4 @@ export const Toolbar = createUi<ToolbarType>(
             </div>
         );
     },
-    'Toolbar',
-);
+)();

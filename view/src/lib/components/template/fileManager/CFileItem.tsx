@@ -2,7 +2,7 @@
 import { CIcon } from '../CIcon';
 import { ChocoUi } from '$Type/Choco';
 import { SetState } from '$Type/Type';
-import { createUi } from '$/custom/test/createUi';
+import { customUi } from '$/custom/customUi';
 import { CCheckbox } from '$Compo/ui/CCheckbox';
 import { RenameAction } from './actions/Rename';
 import { FileManager } from '$Hook/fileManager/fileManager';
@@ -16,37 +16,41 @@ import { useFileNavigation } from '$Hook/fileManager/context/FileNavigation';
 
 const dragIconSize = 50;
 
-interface CFileItemProps {
-    index: number;
-    draggable?: boolean;
-    file: FileManager.FileData;
-    enableFilePreview: boolean;
-    setVisible: SetState<boolean>;
-    selectedFileIndexes: number[];
-    formatDate: FileManager.FormatDate;
-    triggerAction: FileManager.TriggerAction;
-    icons?: Map<string, FileManager.IconData>;
-    filesViewRef: React.RefObject<HTMLDivElement>;
-    onFileOpen?: (file: FileManager.FileData) => void;
-    setLastSelectedFile: (file: FileManager.FileData | null) => void;
-    onRename?: (oldPath: FileManager.FileData, newPath: string) => void;
-    onCreateFolder?: (
-        name: string,
-        folder: FileManager.FileData | null,
-    ) => void;
-    handleContextMenu: (e: React.MouseEvent, isSelection: boolean) => void;
-}
-
 interface TooltipPosition {
     x: number;
     y: number;
 }
 
-export type CFileItemType = ChocoUi.Ui<'div', CFileItemProps>;
+export type CFileItemType = ChocoUi.Ui<
+    'div',
+    {
+        index: number;
+        draggable?: boolean;
+        file: FileManager.FileData;
+        enableFilePreview: boolean;
+        setVisible: SetState<boolean>;
+        selectedFileIndexes: number[];
+        formatDate: FileManager.FormatDate;
+        triggerAction: FileManager.TriggerAction;
+        icons?: Map<string, FileManager.IconData>;
+        filesViewRef: React.RefObject<HTMLDivElement>;
+        onFileOpen?: (file: FileManager.FileData) => void;
+        setLastSelectedFile: (file: FileManager.FileData | null) => void;
+        onRename?: (oldPath: FileManager.FileData, newPath: string) => void;
+        onCreateFolder?: (
+            name: string,
+            folder: FileManager.FileData | null,
+        ) => void;
+        handleContextMenu: (e: React.MouseEvent, isSelection: boolean) => void;
+    }
+>;
 
-export const CFileItem: React.FC<CFileItemProps> = createUi<CFileItemType>(
-    (
-        {
+export const CFileItem = customUi<CFileItemType>(
+    'div',
+    'CFileItem',
+)(
+    ({
+        props: {
             file,
             icons,
             index,
@@ -64,7 +68,7 @@ export const CFileItem: React.FC<CFileItemProps> = createUi<CFileItemType>(
             selectedFileIndexes,
         },
         ref,
-    ) => {
+    }) => {
         const dragIconRef = useRef<HTMLDivElement>(null);
         const [lastClickTime, setLastClickTime] = useState(0);
         const [dropZoneClass, setDropZoneClass] = useState('');
@@ -374,5 +378,4 @@ export const CFileItem: React.FC<CFileItemProps> = createUi<CFileItemType>(
             </div>
         );
     },
-    'CFileItem',
-);
+)();

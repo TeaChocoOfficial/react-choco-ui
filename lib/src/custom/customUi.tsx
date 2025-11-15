@@ -1,56 +1,92 @@
 //-Path: "react-choco-ui/lib/src/custom/customUi.tsx"
-import { forwardRef } from 'react';
+import { OBJ } from '$Hook/object';
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';
 import { ChocoUi } from '$Type/Choco';
-import { Ary } from '@teachoco-dev/cli';
 import { ChocoStyle } from './ChocoStyle';
-
-export function cs(styles: ChocoUi.Styles): ChocoUi.Styles {
-    if (Ary.is(styles)) {
-        return styles.map(cs);
-    } else {
-        new ChocoStyle(styles);
-    }
-    return styles;
-}
+import { forwardRef, useRef } from 'react';
+import { Ary, Obj } from '@teachoco-dev/cli';
+import { ChocoColor } from './color/ChocoColor';
 
 export function customUi<Ui extends ChocoUi.Ui<any, any, any>>(
     tag: Ui['Tag'],
     name: string = 'CComponentUi',
-): ChocoUi.RenderUi<Ui> {
+): ChocoUi.Custom.Render<Ui> {
     const styledElement = styled(tag);
     return (render) => {
         return (style) => {
             const Component = forwardRef<Ui['Element'], Ui['Prop']>(
-                (prop, ref) => {
-                    const { className, ...restProp } = prop;
+                (prop, forRef) => {
+                    const { cs, className, ...restProp } = prop;
                     const props = {
                         className: ['ChocoUi', name, className]
                             .filter(Boolean)
                             .join(' '),
                         ...restProp,
-                    } as React.ComponentPropsWithoutRef<Ui['Tag']>;
-                    const styles = (
-                        styleProp: ChocoUi.StyledUiStyleProp<Ui>,
-                    ) => {
-                        const styleBack =
-                            typeof style === 'function'
-                                ? style(props, styleProp)
-                                : style;
-                        return cs(styleBack);
-                    };
+                    } as Ui['Prop'];
+
                     const Element = styledElement((styleProp) => {
-                        const arg = styles(styleProp);
-                        const args = Ary.is(arg) ? arg : [arg];
+                        const styleBack: ChocoUi.Style.CSS =
+                            typeof style === 'function'
+                                ? style(props, {
+                                      chocoColor: new ChocoColor(
+                                          styleProp.theme,
+                                      ),
+                                      ...styleProp,
+                                  })
+                                : style;
+
+                        const restStyle = Obj.reduce<
+                            typeof restProp,
+                            ChocoUi.Cs
+                        >(
+                            restProp,
+                            (acc, key, value) => {
+                                const hasKey = OBJ.find(
+                                    ChocoStyle.applyDatas,
+                                    (value) => value && key in value,
+                                );
+
+                                if (
+                                    hasKey ||
+                                    key in ChocoStyle.applyKeys ||
+                                    key in ChocoUi.Data.styleKeys
+                                )
+                                    acc[key as keyof ChocoUi.Cs] = value;
+                                return acc;
+                            },
+                            {},
+                        );
+
+                        const chocoCs = new ChocoStyle(cs);
+                        const chocoRest = new ChocoStyle(restStyle);
+                        const chocoBack = new ChocoStyle(styleBack);
+                        const args = Ary.is(chocoBack.cs)
+                            ? chocoBack.cs
+                            : [chocoBack.cs];
+                        args.push(
+                            ...(Ary.is(chocoRest.cs)
+                                ? chocoRest.cs
+                                : [chocoRest.cs]),
+                        );
+                        args.push(
+                            ...(Ary.is(chocoCs.cs) ? chocoCs.cs : [chocoCs.cs]),
+                        );
                         return css(...args);
                     });
-                    const renderProp: ChocoUi.StyledUiRenderProp<Ui> = {
+                    const ref = (forRef ??
+                        useRef<Ui['Element']>(null)) as React.RefObject<
+                        Ui['Element']
+                    >;
+                    const renderProp: ChocoUi.Custom.RenderProp<Ui> = {
                         ref,
                         props,
                         Element,
                     };
-                    return render(renderProp);
+                    const rendered: React.ReactNode = render?.(renderProp) ?? (
+                        <Element ref={ref} {...props} />
+                    );
+                    return rendered;
                 },
             );
             Component.displayName = name;

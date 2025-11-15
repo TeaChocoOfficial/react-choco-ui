@@ -1,9 +1,12 @@
 //-Path: "react-choco-ui/lib/src/components/template/CDialog.tsx"
-import { UiTypes } from '$Type/ui';
-import { createUi } from '$/custom/test/createUi';
+import { ChocoUi } from '$Type/Choco';
+import { customUi } from '$/custom/customUi';
 
-export type CDialogType = UiTypes<'div', { open?: boolean }>;
+export type CDialogType = ChocoUi.Ui<'div', { open?: boolean }>;
 
-export const CDialog = createUi<CDialogType>(({ ...props }, ref) => {
+export const CDialog = customUi<CDialogType>(
+    'div',
+    'CDialog',
+)(({ props: { ...props }, ref }) => {
     return <div ref={ref} {...props} />;
-}, 'CDialog');
+});

@@ -4,7 +4,7 @@ import { ARY } from '$Hook/array';
 import './styles/BreadCrumb.scss';
 import { ChocoUi } from '$Type/Choco';
 import { SetState } from '$Type/Type';
-import { createUi } from '$/custom/test/createUi';
+import { customUi } from '$/custom/customUi';
 import { useEffect, useRef, useState } from 'react';
 import { useFileNavigation } from '$Hook/fileManager/context/FileNavigation';
 import { useTranslation } from '$Hook/fileManager/context/TranslationProvider';
@@ -24,11 +24,18 @@ type CBreadCrumbType = ChocoUi.Ui<
     }
 >;
 
-export const CBreadCrumb = createUi<CBreadCrumbType>(
-    (
-        { collapsibleNav = false, isNavigationPaneOpen, setNavigationPaneOpen },
+export const CBreadCrumb = customUi<CBreadCrumbType>(
+    'div',
+    'CBreadCrumb',
+)(
+    ({
+        props: {
+            collapsibleNav = false,
+            isNavigationPaneOpen,
+            setNavigationPaneOpen,
+        },
         ref,
-    ) => {
+    }) => {
         const t = useTranslation();
         const navTogglerRef = useRef<HTMLDivElement>(null);
         const breadCrumbRef = useRef<HTMLDivElement>(null);
@@ -226,5 +233,4 @@ export const CBreadCrumb = createUi<CBreadCrumbType>(
             </div>
         );
     },
-    'CBreadCrumb',
-);
+)();

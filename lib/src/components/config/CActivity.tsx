@@ -3,7 +3,12 @@ import { Activity, ActivityProps, useMemo } from 'react';
 
 type CActivityProps = ActivityProps & { hide?: boolean; show?: boolean };
 
-export const CActivity = ({ mode, show, hide, ...prop }: CActivityProps) => {
+export const CActivity: React.FC<CActivityProps> = ({
+    mode,
+    show,
+    hide,
+    ...prop
+}) => {
     const finalMode = useMemo(
         () =>
             mode ??

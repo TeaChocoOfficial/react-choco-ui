@@ -234,7 +234,7 @@ export const RenameAction: React.FC<RenameActionProps> = ({
                     </div>
                     <div className="fm-rename-folder-action">
                         <CButton
-                            theme="secondary"
+                            color="secondary"
                             onClick={() => {
                                 setCurrentPathFiles((prev) =>
                                     prev.map((f) => {
@@ -251,7 +251,7 @@ export const RenameAction: React.FC<RenameActionProps> = ({
                             {t('no')}
                         </CButton>
                         <CButton
-                            theme="danger"
+                            color="error"
                             onClick={() => {
                                 setRenameFileWarning(false);
                                 handleFileRenaming(true);

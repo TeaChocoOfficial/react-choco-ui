@@ -1,10 +1,10 @@
 //-Path: "react-choco-ui/lib/src/components/template/fileManager/components/ErrorTooltip.tsx"
 import './ErrorTooltip.scss';
-import { UiTypes } from '$Type/ui';
-import { createUi } from '$/custom/test/createUi';
+import { ChocoUi } from '$Type/Choco';
+import { customUi } from '$/custom/customUi';
 import { FileManager } from '$Hook/fileManager/fileManager';
 
-export type ErrorTooltipType = UiTypes<
+export type ErrorTooltipType = ChocoUi.Ui<
     'p',
     {
         message?: React.ReactNode;
@@ -13,16 +13,17 @@ export type ErrorTooltipType = UiTypes<
     }
 >;
 
-export const ErrorTooltip = createUi<ErrorTooltipType>(
-    ({ message, xPlacement, yPlacement, ...props }, ref) => {
-        return (
-            <p
-                ref={ref}
-                className={`error-tooltip ${xPlacement} ${yPlacement}`}
-                {...props}
-            >
-                {message}
-            </p>
-        );
-    },
-);
+export const ErrorTooltip = customUi<ErrorTooltipType>(
+    'p',
+    'ErrorTooltip',
+)(({ props: { message, xPlacement, yPlacement, ...props }, ref }) => {
+    return (
+        <p
+            ref={ref}
+            className={`error-tooltip ${xPlacement} ${yPlacement}`}
+            {...props}
+        >
+            {message}
+        </p>
+    );
+})();

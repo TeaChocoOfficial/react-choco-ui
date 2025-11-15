@@ -1,9 +1,9 @@
-//-Path: "react-choco-ui/lib/src/components/CPaper.tsx"
-import { UiTypes } from '$Type/ui';
-import { createUi } from '$/custom/test/createUi';
+//-Path: "react-choco-ui/lib/src/components/ui/CPaper.tsx"
 import { tw } from '$/config/utils';
+import { ChocoUi } from '$Type/Choco';
+import { customUi } from '$/custom/customUi';
 
-export type CPaperType = UiTypes<
+export type CPaperType = ChocoUi.Ui<
     'div',
     {
         /**
@@ -33,9 +33,12 @@ export type CPaperType = UiTypes<
     }
 >;
 
-export const CPaper = createUi<CPaperType>(
-    (
-        {
+export const CPaper = customUi<CPaperType>(
+    'div',
+    'CPaper',
+)(
+    ({
+        props: {
             className,
             elevation = 500,
             outlined,
@@ -44,7 +47,7 @@ export const CPaper = createUi<CPaperType>(
             ...props
         },
         ref,
-    ) => {
+    }) => {
         // Base classes
         const baseClasses = tw`tcco_ui duration-300 p-4 box-border`;
 
@@ -71,5 +74,4 @@ export const CPaper = createUi<CPaperType>(
             </div>
         );
     },
-    'CPaper',
-);
+)()
