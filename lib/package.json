@@ -1,6 +1,6 @@
 {
     "name": "@teachoco-official/react-choco-ui",
-    "version": "beta0.0.1",
+    "version": "0.0.1beta",
     "private": false,
     "description": "javascript npm library create by teachoco-official",
     "type": "module",
