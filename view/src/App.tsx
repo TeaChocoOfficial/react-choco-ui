@@ -16,9 +16,9 @@ export default function App() {
                 advanced
                 position="bottom-right"
             /> */}
-            {/* <Test /> */}
+            <Test />
             {/* <Split /> */}
-            <FileManager />
+            {/* <FileManager /> */}
         </ChocoUiProvider>
     );
 }

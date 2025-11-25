@@ -18,22 +18,22 @@
         "jsxImportSource": "@emotion/react",
         "paths": {
             "@teachoco-official/react-choco-ui": [
-                "./src/lib/index.ts"
+                "./src/lib/ui/index.ts"
             ],
             "@teachoco-official/react-choco-ui/*": [
-                "./src/lib/*"
+                "./src/lib/ui/*"
             ],
             "$Compo/*": [
-                "./src/lib/components/*"
+                "./src/lib/ui/components/*"
             ],
             "$Type/*": [
-                "./src/lib/types/*"
+                "./src/lib/ui/types/*"
             ],
             "$Hook/*": [
-                "./src/lib/hooks/*"
+                "./src/lib/ui/hooks/*"
             ],
             "$/*": [
-                "./src/lib/*"
+                "./src/lib/ui/*"
             ]
         },
         "strict": true,

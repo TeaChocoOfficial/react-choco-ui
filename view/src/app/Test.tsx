@@ -34,16 +34,19 @@ export default function Test() {
             brB={{ width: 1, color: 'secondary' }}
         >
             <C.Paper outlined>paper</C.Paper>
-            <C.Split wh={500}>
+            <C.Split wh={500} snap>
                 <C.Split.Pane snap>
                     <C.Box p={5} bgClr="primary">
                         left
                     </C.Box>
+                </C.Split.Pane>
+                <C.Split.Pane snap>
                     <C.Box p={5} bgClr="secondary">
                         right
                     </C.Box>
                 </C.Split.Pane>
             </C.Split>
+            <CollapseComponents />
             {/* <C.Button onClick={() => setOpen(true)} outline>
                 open
             </C.Button>
@@ -93,5 +96,21 @@ export default function Test() {
                 }}
             /> */}
         </C.Box>
+    );
+}
+
+function CollapseComponents() {
+    const [open, setOpen] = useState(false);
+
+    return (
+        <>
+            <C.Button onClick={() => setOpen((prev) => !prev)}>open</C.Button>
+            <C.Collapse open={open} >
+                <p>Paragraph of text</p>
+                <p>Another paragraph is also OK</p>
+                <p>Images and any other content are ok too</p>
+                <img src="nyancat.gif" />
+            </C.Collapse>
+        </>
     );
 }
