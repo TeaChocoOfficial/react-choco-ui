@@ -1,5 +1,4 @@
 //-Path: "react-choco-ui/lib/src/components/ui/CPaper.tsx"
-import { tw } from '$/config/utils';
 import { ChocoUi } from '$Type/Choco';
 import { customUi } from '$/custom/customUi';
 
@@ -7,71 +6,32 @@ export type CPaperType = ChocoUi.Ui<
     'div',
     {
         /**
-         * ระดับความสูงของเงา (elevation)
-         * @default 1
+         * ระดับความสูงของเงา (shade)
+         * @default 5
          */
-        elevation?:
-            | 50
-            | 100
-            | 200
-            | 300
-            | 400
-            | 500
-            | 600
-            | 700
-            | 800
-            | 900
-            | 950;
-
-        outlined?: boolean;
+        shade?: ChocoUi.Color.Shade.Key;
 
         /**
          * ทำให้มุมโค้งมน
-         * @default true
+         * @default false
          */
         square?: boolean;
+
+        outlined?: boolean | number;
     }
 >;
 
-export const CPaper = customUi<CPaperType>(
-    'div',
-    'CPaper',
-)(
-    ({
-        props: {
-            className,
-            elevation = 500,
-            outlined,
-            square = false,
-            children,
-            ...props
+export const CPaper = customUi<CPaperType>('div', 'CPaper')()(
+    ({ shade = 5, outlined, square }) => ({
+        p: 4,
+        borR: square ? undefined : null,
+        br: {
+            color: `paper-${
+                outlined ? shade + (Number(outlined) ?? 1) : shade
+            }`,
         },
-        ref,
-    }) => {
-        // Base classes
-        const baseClasses = tw`tcco_ui duration-300 p-4 box-border`;
-
-        // Background or border based on outlined prop
-        const colorClasses = tw({
-            [`border-4 border-gray-${elevation}`]: outlined,
-            [`bg-gray-${elevation}`]: !outlined,
-        });
-
-        // Border radius
-        const radiusClasses = tw({ 'rounded-lg': !square });
-
-        // Combine all classes
-        const combinedClasses = tw(
-            baseClasses,
-            colorClasses,
-            radiusClasses,
-            className,
-        );
-
-        return (
-            <div ref={ref} className={combinedClasses} {...props}>
-                {children}
-            </div>
-        );
-    },
-)()
+        bgClr: `paper-${
+            outlined ? 10 - shade - (Number(outlined) ?? 1) : shade
+        }`,
+    }),
+);

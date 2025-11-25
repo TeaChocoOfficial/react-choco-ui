@@ -1,28 +1,12 @@
-//-Path: "react-choco-ui/lib/src/components/template/fileManager/fileList/useFileList.tsx"
-import { useEffect, useState } from 'react';
+//-Path: "react-choco-ui/lib/src/hooks/fileManager/hook/useFileList.tsx"
 import { CIcon } from '$Compo/template/CIcon';
 import { FileManager } from '$Hook/fileManager/fileManager';
 import { useLayout } from '$Hook/fileManager/context/Layout';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useClipBoard } from '$Hook/fileManager/context/Clipboard';
 import { useSelection } from '$Hook/fileManager/context/Selection';
 import { useFileNavigation } from '$Hook/fileManager/context/FileNavigation';
 import { useTranslation } from '$Hook/fileManager/context/TranslationProvider';
-
-interface ContextMenuItem {
-    icon: React.ReactNode;
-    title: string;
-    hidden?: boolean;
-    divider?: boolean;
-    onClick?: React.MouseEventHandler<HTMLElement>;
-    children?: ContextMenuItem[];
-    selected?: boolean;
-    className?: string;
-}
-
-interface ClickPosition {
-    clickX: number;
-    clickY: number;
-}
 
 export const useFileList = (
     enableFilePreview: boolean,
@@ -31,209 +15,248 @@ export const useFileList = (
     onFileOpen?: (file: FileManager.FileData) => void,
     onRefresh?: FileManager.Callback,
 ) => {
-    const [selectedFileIndexes, setSelectedFileIndexes] = useState<number[]>(
-        [],
-    );
+    const t = useTranslation();
     const [visible, setVisible] = useState(false);
+    const { activeLayout, setActiveLayout } = useLayout();
     const [isSelectionCtx, setIsSelectionCtx] = useState(false);
-    const [clickPosition, setClickPosition] = useState<ClickPosition>({
-        clickX: 0,
-        clickY: 0,
+    const [clickPosition, setClickPosition] = useState<FileManager.Position>({
+        x: 0,
+        y: 0,
     });
     const [lastSelectedFile, setLastSelectedFile] =
         useState<FileManager.FileData | null>(null);
 
+    const [selectedFileIndexes, setSelectedFileIndexes] = useState<number[]>(
+        [],
+    );
     const { clipBoard, setClipBoard, handleCutCopy, handlePasting } =
         useClipBoard();
     const { selectedFiles, setSelectedFiles, handleDownload } = useSelection();
     const {
         currentPath,
-        setCurrentPath,
         currentPathFiles,
-        setCurrentPathFiles,
         onFolderChange,
+        setCurrentPath,
+        setCurrentPathFiles,
     } = useFileNavigation();
-    const { activeLayout, setActiveLayout } = useLayout();
-    const t = useTranslation();
 
-    // Context Menu
-    const handleFileOpen = () => {
+    // Context Menu Handlers - memoized callbacks
+    const handleFileOpen = useCallback(() => {
         if (!lastSelectedFile) return;
-
         onFileOpen?.(lastSelectedFile);
         if (lastSelectedFile.isDirectory) {
             setCurrentPath(lastSelectedFile.path ?? '');
             onFolderChange?.(lastSelectedFile.path ?? '');
             setSelectedFileIndexes([]);
             setSelectedFiles([]);
-        } else {
-            enableFilePreview && triggerAction.show('previewFile');
-        }
+        } else enableFilePreview && triggerAction.show('previewFile');
         setVisible(false);
-    };
+    }, [
+        lastSelectedFile,
+        onFileOpen,
+        setCurrentPath,
+        onFolderChange,
+        enableFilePreview,
+        triggerAction,
+    ]);
 
-    const handleMoveOrCopyItems = (isMoving: boolean) => {
-        handleCutCopy(isMoving);
-        setVisible(false);
-    };
+    const handleMoveOrCopyItems = useCallback(
+        (isMoving: boolean) => {
+            handleCutCopy(isMoving);
+            setVisible(false);
+        },
+        [handleCutCopy],
+    );
 
-    const handleFilePasting = () => {
+    const handleFilePasting = useCallback(() => {
         handlePasting(lastSelectedFile);
         setVisible(false);
-    };
+    }, [handlePasting, lastSelectedFile]);
 
-    const handleRenaming = () => {
+    const handleRenaming = useCallback(() => {
         setVisible(false);
         triggerAction.show('rename');
-    };
+    }, [triggerAction]);
 
-    const handleDownloadItems = () => {
+    const handleDownloadItems = useCallback(() => {
         handleDownload();
         setVisible(false);
-    };
+    }, [handleDownload]);
 
-    const handleDelete = () => {
+    const handleDelete = useCallback(() => {
         setVisible(false);
         triggerAction.show('delete');
-    };
+    }, [triggerAction]);
 
-    const handleRefresh = () => {
+    const handleRefresh = useCallback(() => {
         setVisible(false);
         FileManager.validateApiCallback(onRefresh, 'onRefresh');
         setClipBoard(null);
-    };
+    }, [onRefresh, setClipBoard]);
 
-    const handleCreateNewFolder = () => {
+    const handleCreateNewFolder = useCallback(() => {
         triggerAction.show('createFolder');
         setVisible(false);
-    };
+    }, [triggerAction]);
 
-    const handleUpload = () => {
+    const handleUpload = useCallback(() => {
         setVisible(false);
         triggerAction.show('uploadFile');
-    };
+    }, [triggerAction]);
 
-    const handleselectAllFiles = () => {
+    const handleselectAllFiles = useCallback(() => {
         setSelectedFiles(currentPathFiles);
         setVisible(false);
-    };
+    }, [currentPathFiles]);
 
-    const emptySelecCtxItems: ContextMenuItem[] = [
-        {
-            title: t('view'),
-            icon:
-                activeLayout === 'grid' ? (
-                    <CIcon icon="BsGrid" size={18} />
-                ) : (
-                    <CIcon icon="FaListUl" size={18} />
+    // Memoized context menu items
+    const emptySelecCtxItems: FileManager.MenuItem[] = useMemo(
+        () => [
+            {
+                title: t('view'),
+                onClick: () => {},
+                icon: (
+                    <CIcon
+                        fontS={18}
+                        icon={activeLayout === 'grid' ? 'BsGrid' : 'FaListUl'}
+                    />
                 ),
-            onClick: () => {},
-            children: [
-                {
-                    title: t('grid'),
-                    icon: <CIcon icon="BsGrid" size={18} />,
-                    selected: activeLayout === 'grid',
-                    onClick: () => {
-                        setActiveLayout('grid');
-                        setVisible(false);
+                children: [
+                    {
+                        title: t('grid'),
+                        selected: activeLayout === 'grid',
+                        icon: <CIcon icon="BsGrid" fontS={18} />,
+                        onClick: () => {
+                            setActiveLayout('grid');
+                            setVisible(false);
+                        },
                     },
-                },
-                {
-                    title: t('list'),
-                    icon: <CIcon icon="FaListUl" size={18} />,
-                    selected: activeLayout === 'list',
-                    onClick: () => {
-                        setActiveLayout('list');
-                        setVisible(false);
+                    {
+                        title: t('list'),
+                        selected: activeLayout === 'list',
+                        icon: <CIcon icon="FaListUl" fontS={18} />,
+                        onClick: () => {
+                            setActiveLayout('list');
+                            setVisible(false);
+                        },
                     },
-                },
-            ],
-        },
-        {
-            title: t('refresh'),
-            icon: <CIcon icon="FiRefreshCw" size={18} />,
-            onClick: handleRefresh,
-            divider: true,
-        },
-        {
-            title: t('newFolder'),
-            icon: <CIcon icon="BsFolderPlus" size={18} />,
-            onClick: handleCreateNewFolder,
-            hidden: !permissions.create,
-            divider: !permissions.upload,
-        },
-        {
-            title: t('upload'),
-            icon: <CIcon icon="MdOutlineFileUpload" size={18} />,
-            onClick: handleUpload,
-            divider: true,
-            hidden: !permissions.upload,
-        },
-        {
-            title: t('selectAll'),
-            icon: <CIcon icon="BiSelectMultiple" size={18} />,
-            onClick: handleselectAllFiles,
-        },
-    ];
+                ],
+            },
+            {
+                divider: true,
+                title: t('refresh'),
+                onClick: handleRefresh,
+                icon: <CIcon icon="FiRefreshCw" fontS={18} />,
+            },
+            {
+                title: t('newFolder'),
+                hidden: !permissions.create,
+                divider: !permissions.upload,
+                onClick: handleCreateNewFolder,
+                icon: <CIcon icon="BsFolderPlus" fontS={18} />,
+            },
+            {
+                divider: true,
+                title: t('upload'),
+                onClick: handleUpload,
+                hidden: !permissions.upload,
+                icon: <CIcon icon="MdOutlineFileUpload" fontS={18} />,
+            },
+            {
+                title: t('selectAll'),
+                onClick: handleselectAllFiles,
+                icon: <CIcon icon="BiSelectMultiple" fontS={18} />,
+            },
+        ],
+        [
+            t,
+            activeLayout,
+            setActiveLayout,
+            handleRefresh,
+            permissions,
+            handleCreateNewFolder,
+            handleUpload,
+            handleselectAllFiles,
+        ],
+    );
 
-    const selecCtxItems: ContextMenuItem[] = [
-        {
-            title: t('open'),
-            icon: lastSelectedFile?.isDirectory ? (
-                <CIcon icon="PiFolderOpen" size={20} />
-            ) : (
-                <CIcon icon="FaRegFile" size={16} />
-            ),
-            onClick: handleFileOpen,
-            divider: true,
-        },
-        {
-            title: t('cut'),
-            icon: <CIcon icon="BsScissors" size={19} />,
-            onClick: () => handleMoveOrCopyItems(true),
-            divider: !lastSelectedFile?.isDirectory && !permissions.copy,
-            hidden: !permissions.move,
-        },
-        {
-            title: t('copy'),
-            icon: (
-                <CIcon size={17} icon="BsCopy" style={{ strokeWidth: 0.1 }} />
-            ),
-            onClick: () => handleMoveOrCopyItems(false),
-            divider: !lastSelectedFile?.isDirectory,
-            hidden: !permissions.copy,
-        },
-        {
-            title: t('paste'),
-            icon: <CIcon icon="FaRegPaste" size={18} />,
-            onClick: handleFilePasting,
-            className: `${clipBoard ? '' : 'disable-paste'}`,
-            hidden:
-                !lastSelectedFile?.isDirectory ||
-                (!permissions.move && !permissions.copy),
-            divider: true,
-        },
-        {
-            title: t('rename'),
-            icon: <CIcon icon="BiRename" size={19} />,
-            onClick: handleRenaming,
-            hidden: selectedFiles.length > 1 || !permissions.rename,
-        },
-        {
-            title: t('download'),
-            icon: <CIcon icon="MdOutlineFileDownload" size={18} />,
-            onClick: handleDownloadItems,
-            hidden: !permissions.download,
-        },
-        {
-            title: t('delete'),
-            icon: <CIcon icon="MdOutlineDelete" size={19} />,
-            onClick: handleDelete,
-            hidden: !permissions.delete,
-        },
-    ];
+    const selecCtxItems: FileManager.MenuItem[] = useMemo(
+        () => [
+            {
+                divider: true,
+                title: t('open'),
+                onClick: handleFileOpen,
+                icon: lastSelectedFile?.isDirectory ? (
+                    <CIcon icon="PiFolderOpen" fontS={20} />
+                ) : (
+                    <CIcon icon="FaRegFile" fontS={16} />
+                ),
+            },
+            {
+                title: t('cut'),
+                hidden: !permissions.move,
+                onClick: () => handleMoveOrCopyItems(true),
+                icon: <CIcon icon="BsScissors" fontS={19} />,
+                divider: !lastSelectedFile?.isDirectory && !permissions.copy,
+            },
+            {
+                title: t('copy'),
+                hidden: !permissions.copy,
+                divider: !lastSelectedFile?.isDirectory,
+                onClick: () => handleMoveOrCopyItems(false),
+                icon: (
+                    <CIcon
+                        fontS={17}
+                        icon="BsCopy"
+                        style={{ strokeWidth: 0.1 }}
+                    />
+                ),
+            },
+            {
+                divider: true,
+                title: t('paste'),
+                onClick: handleFilePasting,
+                disablePaste: Boolean(clipBoard),
+                hidden:
+                    !lastSelectedFile?.isDirectory ||
+                    (!permissions.move && !permissions.copy),
+                icon: <CIcon icon="FaRegPaste" fontS={18} />,
+            },
+            {
+                title: t('rename'),
+                onClick: handleRenaming,
+                icon: <CIcon icon="BiRename" fontS={19} />,
+                hidden: selectedFiles.length > 1 || !permissions.rename,
+            },
+            {
+                title: t('download'),
+                onClick: handleDownloadItems,
+                hidden: !permissions.download,
+                icon: <CIcon icon="MdOutlineFileDownload" fontS={18} />,
+            },
+            {
+                title: t('delete'),
+                onClick: handleDelete,
+                hidden: !permissions.delete,
+                icon: <CIcon icon="MdOutlineDelete" fontS={19} />,
+            },
+        ],
+        [
+            t,
+            handleFileOpen,
+            lastSelectedFile,
+            permissions,
+            handleMoveOrCopyItems,
+            handleFilePasting,
+            clipBoard,
+            handleRenaming,
+            selectedFiles.length,
+            handleDownloadItems,
+            handleDelete,
+        ],
+    );
 
-    const handleFolderCreating = () => {
+    const handleFolderCreating = useCallback(() => {
         setCurrentPathFiles((prev) => {
             return [
                 ...prev,
@@ -250,9 +273,9 @@ export const useFileList = (
                 } as FileManager.FileData,
             ];
         });
-    };
+    }, [currentPath, setCurrentPathFiles]);
 
-    const handleItemRenaming = () => {
+    const handleItemRenaming = useCallback(() => {
         setCurrentPathFiles((prev) => {
             const lastFileIndex =
                 selectedFileIndexes.length > 0
@@ -264,38 +287,32 @@ export const useFileList = (
                 return prev;
             }
 
-            return prev.map((file, index) => {
-                if (index === lastFileIndex) {
-                    return {
-                        ...file,
-                        isEditing: true,
-                    };
-                }
-
-                return file;
-            });
+            return prev.map((file, index) =>
+                index === lastFileIndex ? { ...file, isEditing: true } : file,
+            );
         });
 
         setSelectedFileIndexes([]);
         setSelectedFiles([]);
-    };
+    }, [selectedFileIndexes, triggerAction]);
 
-    const unselectFiles = () => {
+    const unselectFiles = useCallback(() => {
         setSelectedFileIndexes([]);
         setSelectedFiles((prev) => (prev.length > 0 ? [] : prev));
-    };
+    }, []);
 
-    const handleContextMenu = (
-        e: React.MouseEvent,
-        isSelection: boolean = false,
-    ) => {
-        e.preventDefault();
-        setClickPosition({ clickX: e.clientX, clickY: e.clientY });
-        setIsSelectionCtx(isSelection);
-        !isSelection && unselectFiles();
-        setVisible(true);
-    };
+    const handleContextMenu = useCallback(
+        (event: React.MouseEvent, isSelection: boolean = false) => {
+            event.preventDefault();
+            setClickPosition({ x: event.clientX, y: event.clientY });
+            setIsSelectionCtx(isSelection);
+            !isSelection && unselectFiles();
+            setVisible(true);
+        },
+        [unselectFiles],
+    );
 
+    // Effects
     useEffect(() => {
         if (triggerAction.isActive) {
             switch (triggerAction.actionType) {
@@ -307,7 +324,12 @@ export const useFileList = (
                     break;
             }
         }
-    }, [triggerAction.isActive]);
+    }, [
+        triggerAction.isActive,
+        triggerAction.actionType,
+        handleFolderCreating,
+        handleItemRenaming,
+    ]);
 
     useEffect(() => {
         setSelectedFileIndexes([]);
@@ -315,29 +337,37 @@ export const useFileList = (
     }, [currentPath]);
 
     useEffect(() => {
-        if (selectedFiles.length > 0) {
-            setSelectedFileIndexes(() => {
-                return selectedFiles.map((selectedFile) => {
-                    return currentPathFiles.findIndex(
-                        (f) => f.path === selectedFile.path,
-                    );
-                });
-            });
-        } else {
-            setSelectedFileIndexes([]);
-        }
+        const newIndexes = selectedFiles
+            .map((selectedFile) =>
+                currentPathFiles.findIndex((f) => f.path === selectedFile.path),
+            )
+            .filter((index) => index !== -1);
+
+        setSelectedFileIndexes(newIndexes);
     }, [selectedFiles, currentPathFiles]);
 
-    return {
-        emptySelecCtxItems,
-        selecCtxItems,
-        handleContextMenu,
-        unselectFiles,
-        visible,
-        setVisible,
-        setLastSelectedFile,
-        selectedFileIndexes,
-        clickPosition,
-        isSelectionCtx,
-    };
+    return useMemo(
+        () => ({
+            visible,
+            clickPosition,
+            selecCtxItems,
+            isSelectionCtx,
+            emptySelecCtxItems,
+            selectedFileIndexes,
+            setVisible,
+            unselectFiles,
+            handleContextMenu,
+            setLastSelectedFile,
+        }),
+        [
+            visible,
+            clickPosition,
+            selecCtxItems,
+            isSelectionCtx,
+            emptySelecCtxItems,
+            selectedFileIndexes,
+            unselectFiles,
+            handleContextMenu,
+        ],
+    );
 };

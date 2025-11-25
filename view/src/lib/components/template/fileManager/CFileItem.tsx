@@ -1,25 +1,15 @@
 //-Path: "react-choco-ui/lib/src/components/template/fileManager/CFileItem.tsx"
-import { CIcon } from '../CIcon';
+import { CBox } from '$Compo/ui/CBox';
 import { ChocoUi } from '$Type/Choco';
 import { SetState } from '$Type/Type';
+import { FileChilds } from './FileChilds';
 import { customUi } from '$/custom/customUi';
-import { CCheckbox } from '$Compo/ui/CCheckbox';
-import { RenameAction } from './actions/Rename';
 import { FileManager } from '$Hook/fileManager/fileManager';
-import { CreateFolderAction } from './actions/CreateFolder';
 import { useLayout } from '$Hook/fileManager/context/Layout';
-import { cloneElement, useEffect, useRef, useState } from 'react';
-import { useFileIcons } from '$Hook/fileManager/hook/useFileIcons';
 import { useSelection } from '$Hook/fileManager/context/Selection';
 import { useClipBoard } from '$Hook/fileManager/context/Clipboard';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFileNavigation } from '$Hook/fileManager/context/FileNavigation';
-
-const dragIconSize = 50;
-
-interface TooltipPosition {
-    x: number;
-    y: number;
-}
 
 export type CFileItemType = ChocoUi.Ui<
     'div',
@@ -50,10 +40,13 @@ export const CFileItem = customUi<CFileItemType>(
     'CFileItem',
 )(
     ({
-        props: {
+        ref,
+        chocoColor,
+        ChocoShade,
+        restProps: {
             file,
-            icons,
             index,
+            icons,
             onRename,
             draggable,
             formatDate,
@@ -62,27 +55,26 @@ export const CFileItem = customUi<CFileItemType>(
             filesViewRef,
             triggerAction,
             onCreateFolder,
-            enableFilePreview,
             handleContextMenu,
-            setLastSelectedFile,
+            enableFilePreview,
             selectedFileIndexes,
+            setLastSelectedFile,
+            ...restProps
         },
-        ref,
     }) => {
+        console.log('render CFileItem', index);
+
         const dragIconRef = useRef<HTMLDivElement>(null);
         const [lastClickTime, setLastClickTime] = useState(0);
         const [dropZoneClass, setDropZoneClass] = useState('');
         const [fileSelected, setFileSelected] = useState(false);
-        const [checkboxClassName, setCheckboxClassName] = useState('hidden');
+        const [checkboxVisible, setCheckboxVisible] = useState(false);
         const [tooltipPosition, setTooltipPosition] =
-            useState<TooltipPosition | null>(null);
+            useState<FileManager.Position | null>(null);
 
-        const { activeLayout } = useLayout();
-        const iconSize = activeLayout === 'grid' ? 48 : 20;
-        const getFileIcons = useFileIcons(iconSize);
         const { setSelectedFiles } = useSelection();
-        const getDragIcons = useFileIcons(dragIconSize);
-        const { setCurrentPath, currentPathFiles, onFolderChange } =
+        const { activeLayout, color } = useLayout();
+        const { setCurrentPath, onFolderChange, currentPathFiles } =
             useFileNavigation();
         const { clipBoard, handleCutCopy, setClipBoard, handlePasting } =
             useClipBoard();
@@ -104,57 +96,58 @@ export const CFileItem = customUi<CFileItemType>(
             }
         };
 
-        const handleFileRangeSelection = (
-            shiftKey: boolean,
-            ctrlKey: boolean,
-        ) => {
-            if (selectedFileIndexes.length > 0 && shiftKey) {
-                let reverseSelection = false;
-                let startRange = selectedFileIndexes[0];
-                let endRange = index;
+        const handleFileRangeSelection = useCallback(
+            (shiftKey: boolean, ctrlKey: boolean) => {
+                if (selectedFileIndexes.length > 0 && shiftKey) {
+                    let reverseSelection = false;
+                    let startRange = selectedFileIndexes[0];
+                    let endRange = index;
 
-                // Reverse Selection
-                if (startRange >= endRange) {
-                    const temp = startRange;
-                    startRange = endRange;
-                    endRange = temp;
-                    reverseSelection = true;
-                }
-
-                const filesRange = currentPathFiles.slice(
-                    startRange,
-                    endRange + 1,
-                );
-                setSelectedFiles(
-                    reverseSelection ? filesRange.reverse() : filesRange,
-                );
-            } else if (selectedFileIndexes.length > 0 && ctrlKey) {
-                // Remove file from selected files if it already exists on CTRL + Click, otherwise push it in selectedFiles
-                setSelectedFiles((prev) => {
-                    const filteredFiles = prev.filter(
-                        (f) => f.path !== file.path,
-                    );
-                    if (prev.length === filteredFiles.length) {
-                        return [...prev, file];
+                    // Reverse Selection
+                    if (startRange >= endRange) {
+                        const temp = startRange;
+                        startRange = endRange;
+                        endRange = temp;
+                        reverseSelection = true;
                     }
-                    return filteredFiles;
-                });
-            } else {
-                setSelectedFiles([file]);
-            }
-        };
 
-        const handleFileSelection = (e: React.MouseEvent) => {
-            e.stopPropagation();
+                    const filesRange = currentPathFiles.slice(
+                        startRange,
+                        endRange + 1,
+                    );
+                    setSelectedFiles(
+                        reverseSelection ? filesRange.reverse() : filesRange,
+                    );
+                } else if (selectedFileIndexes.length > 0 && ctrlKey) {
+                    // Remove file from selected files if it already exists on CTRL + Click, otherwise push it in selectedFiles
+                    setSelectedFiles((prev) => {
+                        const filteredFiles = prev.filter(
+                            (f) => f.path !== file.path,
+                        );
+                        if (prev.length === filteredFiles.length) {
+                            return [...prev, file];
+                        }
+                        return filteredFiles;
+                    });
+                } else {
+                    setSelectedFiles([file]);
+                }
+            },
+            [selectedFileIndexes, currentPathFiles, file, index],
+        );
+
+        const handleFileSelection = (event: React.MouseEvent) => {
+            event.stopPropagation();
+
             if (file.isEditing) return;
 
-            handleFileRangeSelection(e.shiftKey, e.ctrlKey || e.metaKey);
+            handleFileRangeSelection(
+                event.shiftKey,
+                event.ctrlKey || event.metaKey,
+            );
 
             const currentTime = new Date().getTime();
-            if (currentTime - lastClickTime < 300) {
-                handleFileAccess();
-                return;
-            }
+            if (currentTime - lastClickTime < 300) return handleFileAccess();
             setLastClickTime(currentTime);
         };
 
@@ -171,23 +164,17 @@ export const CFileItem = customUi<CFileItemType>(
             e.preventDefault();
 
             if (file.isEditing) return;
-
-            if (!fileSelected) {
-                setSelectedFiles([file]);
-            }
+            if (!fileSelected) setSelectedFiles([file]);
 
             setLastSelectedFile(file);
             handleContextMenu(e, true);
         };
 
         // Selection Checkbox Functions
-        const handleMouseOver = () => {
-            setCheckboxClassName('visible');
-        };
+        const handleMouseOver = () => setCheckboxVisible(true); //'visible'
 
-        const handleMouseLeave = () => {
-            !fileSelected && setCheckboxClassName('hidden');
-        };
+        const handleMouseLeave = () =>
+            !fileSelected && setCheckboxVisible(false); //hidden
 
         const handleCheckboxChange = (
             e: React.ChangeEvent<HTMLInputElement>,
@@ -204,12 +191,10 @@ export const CFileItem = customUi<CFileItemType>(
 
             setFileSelected(e.target.checked);
         };
-        //
 
         const handleDragStart = (event: React.DragEvent) => {
-            if (dragIconRef.current) {
+            if (dragIconRef.current)
                 event.dataTransfer.setDragImage(dragIconRef.current, 30, 50);
-            }
             event.dataTransfer.effectAllowed = 'copy';
             handleCutCopy(true);
         };
@@ -246,18 +231,43 @@ export const CFileItem = customUi<CFileItemType>(
 
         useEffect(() => {
             setFileSelected(selectedFileIndexes.includes(index));
-            setCheckboxClassName(
-                selectedFileIndexes.includes(index) ? 'visible' : 'hidden',
-            );
-        }, [selectedFileIndexes, index]);
+            setCheckboxVisible(selectedFileIndexes.includes(index));
+        }, [selectedFileIndexes, index]); // ← re-run เมื่อ selectedFileIndexes เปลี่ยน
 
-        const icon = icons?.get(`${file.class}`);
-        const fileExtension = file.name?.split('.').pop()?.toLowerCase();
+        const selectedColor = useMemo(
+            () =>
+                dropZoneClass
+                    ? 'red'
+                    : fileSelected
+                    ? new ChocoShade(chocoColor.get(color).alpha(0.4))[10]
+                    : null,
+            [color, fileSelected],
+        );
 
         return (
-            <div
+            <CBox
                 ref={ref}
+                mx={0}
                 tabIndex={0}
+                borS="solid"
+                bgClr={selectedColor}
+                borClr={selectedColor}
+                dFlex={activeLayout === 'list'}
+                fullW={activeLayout === 'list'}
+                my={activeLayout === 'list' ? 0 : 1}
+                borR={activeLayout === 'list' ? 0 : 1}
+                cs={{
+                    ':hover': {
+                        bgClr:
+                            fileSelected || !!file.isEditing
+                                ? color
+                                : new ChocoShade(chocoColor.get(color))[10],
+                        borClr:
+                            fileSelected || !!file.isEditing
+                                ? new ChocoShade(chocoColor.get(color))[3]
+                                : color,
+                    },
+                }}
                 title={file.name}
                 onDrop={handleDrop}
                 onDragEnd={handleDragEnd}
@@ -274,108 +284,23 @@ export const CFileItem = customUi<CFileItemType>(
                 className={`file-item-container ${dropZoneClass} ${
                     fileSelected || !!file.isEditing ? 'file-selected' : ''
                 } ${isFileMoving ? 'file-moving' : ''}`}
+                {...restProps}
             >
-                <div className="file-item">
-                    {!file.isEditing && (
-                        <CCheckbox
-                            name={file.name}
-                            id={file.name}
-                            checked={fileSelected}
-                            className={`selection-checkbox ${checkboxClassName}`}
-                            onChange={handleCheckboxChange}
-                            onClick={(event) => event.stopPropagation()}
-                        />
-                    )}
-                    {file.isDirectory ? (
-                        file.class && icons && icon ? (
-                            (activeLayout === 'grid'
-                                ? icon.grid
-                                : icon.list) || (
-                                <CIcon icon="FaFolder" size={iconSize} />
-                            )
-                        ) : (
-                            <CIcon icon="FaRegFolderOpen" size={iconSize} />
-                        )
-                    ) : file.class && icons && icon ? (
-                        cloneElement(icon.open || icon.default, {
-                            height: 40,
-                        })
-                    ) : (
-                        <>
-                            {' '}
-                            {getFileIcons(fileExtension) ?? (
-                                <CIcon icon="FaRegFile" size={iconSize} />
-                            )}{' '}
-                        </>
-                    )}
-
-                    {file.isEditing ? (
-                        <div
-                            className={`rename-file-container ${activeLayout}`}
-                        >
-                            {triggerAction.actionType === 'createFolder' ? (
-                                <CreateFolderAction
-                                    file={file}
-                                    filesViewRef={filesViewRef}
-                                    triggerAction={triggerAction}
-                                    onCreateFolder={onCreateFolder}
-                                />
-                            ) : (
-                                <RenameAction
-                                    file={file}
-                                    onRename={onRename}
-                                    filesViewRef={filesViewRef}
-                                    triggerAction={triggerAction}
-                                />
-                            )}
-                        </div>
-                    ) : (
-                        <span className="text-truncate file-name">
-                            {file.name}
-                        </span>
-                    )}
-                </div>
-
-                {activeLayout === 'list' && (
-                    <>
-                        <div className="modified-date">
-                            {formatDate(file.updatedAt)}
-                        </div>
-                        <div className="size">
-                            {file?.size && file.size > 0
-                                ? FileManager.getDataSize(file.size)
-                                : ''}
-                        </div>
-                    </>
-                )}
-
-                {/* Drag Icon & Tooltip Setup */}
-                {tooltipPosition && (
-                    <div
-                        style={{
-                            top: `${tooltipPosition.y}px`,
-                            left: `${tooltipPosition.x}px`,
-                        }}
-                        className="drag-move-tooltip"
-                    >
-                        Move to{' '}
-                        <span className="drop-zone-file-name">{file.name}</span>
-                    </div>
-                )}
-
-                <div ref={dragIconRef} className="drag-icon">
-                    {file.isDirectory ? (
-                        <CIcon icon="FaRegFolderOpen" size={dragIconSize} />
-                    ) : (
-                        <>
-                            {getDragIcons(fileExtension) ?? (
-                                <CIcon icon="FaRegFile" size={dragIconSize} />
-                            )}
-                        </>
-                    )}
-                </div>
-                {/* Drag Icon & Tooltip Setup */}
-            </div>
+                <FileChilds
+                    file={file}
+                    icons={icons}
+                    filesViewRef={ref}
+                    onRename={onRename}
+                    formatDate={formatDate}
+                    dragIconRef={dragIconRef}
+                    fileSelected={fileSelected}
+                    triggerAction={triggerAction}
+                    onCreateFolder={onCreateFolder}
+                    checkboxVisible={checkboxVisible}
+                    tooltipPosition={tooltipPosition}
+                    handleCheckboxChange={handleCheckboxChange}
+                />
+            </CBox>
         );
     },
 )();

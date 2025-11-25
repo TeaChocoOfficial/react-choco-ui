@@ -1,20 +1,12 @@
 {
     "name": "@teachoco-official/react-choco-ui",
-    "version": "0.0.1beta",
+    "version": "0.0.1-beta",
     "private": false,
     "description": "javascript npm library create by teachoco-official",
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "module": "dist/index.esm.js",
-    "exports": {
-        ".": {
-            "import": "./dist/index.esm.js",
-            "require": "./dist/index.js",
-            "types": "./dist/types/index.d.ts"
-        },
-        "./style.css": "./dist/style.css"
-    },
     "files": [
         "dist"
     ],

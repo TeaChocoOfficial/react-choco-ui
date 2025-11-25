@@ -1,24 +1,12 @@
 //-Path: "react-choco-ui/lib/src/components/template/fileManager/CFileManager.tsx"
-import './styles/FileManager.scss';
+// import './styles/FileManager.scss';
 import { ChocoUi } from '$Type/Choco';
-import { CFileList } from './CFileList';
-import { useMemo, useState } from 'react';
-import { CBreadCrumb } from './CBreadCrumb';
 import { Loader } from './components/Loader';
 import { customUi } from '$/custom/customUi';
-import { Actions } from './components/Actions';
-import { Toolbar } from './components/Toolbar';
 import { Locales } from '$Hook/fileManager/locales';
+import { FileManagerChilds } from './FileManagerChilds';
 import { FileManager } from '$Hook/fileManager/fileManager';
-import { NavigationPane } from './components/NavigationPane';
-import { FilesProvider } from '$Hook/fileManager/context/Files';
-import { LayoutProvider } from '$Hook/fileManager/context/Layout';
-import { SelectionProvider } from '$Hook/fileManager/context/Selection';
-import { ClipBoardProvider } from '$Hook/fileManager/context/Clipboard';
-import { useColumnResize } from '$Hook/fileManager/hook/useColumnResize';
-import { useTriggerAction } from '$Hook/fileManager/hook/useTriggerAction';
-import { FileNavigationProvider } from '$Hook/fileManager/context/FileNavigation';
-import { TranslationProvider } from '$Hook/fileManager/context/TranslationProvider';
+import { Providers } from '$Hook/fileManager/context/Providers';
 
 export type CFileManagerType = ChocoUi.Ui<
     'main',
@@ -28,9 +16,7 @@ export type CFileManagerType = ChocoUi.Ui<
         fontFamily?: string;
         maxFileSize?: number;
         initialPath?: string;
-        primaryColor?: string;
         width?: string | number;
-        layout?: 'grid' | 'list';
         height?: string | number;
         collapsibleNav?: boolean;
         filePreviewPath?: string;
@@ -38,6 +24,8 @@ export type CFileManagerType = ChocoUi.Ui<
         enableFilePreview?: boolean;
         defaultNavExpanded?: boolean;
         files?: FileManager.FileData[];
+        layout?: FileManager.LayoutType;
+        color?: ChocoUi.Color.ColorsType;
         icons?: Map<string, FileManager.IconData>;
         actions?: Map<string, FileManager.Action[]>;
         permissions?: FileManager.Permissions;
@@ -70,201 +58,112 @@ export const CFileManager = customUi<CFileManagerType>(
     'CFileManager',
 )(
     ({
-        props: {
-            style,
-            className,
-            maxFileSize,
-            initialPath,
-            width = '100%',
-            height = '100%',
+        ref,
+        Element,
+        restProps: {
+            files,
+            icons,
+            color = 'secondary',
+            layout = 'grid',
+            actions,
             language = 'en-US',
-            fontFamily = 'Nunito Sans, sans-serif',
-            primaryColor = '#6155b4',
+            className,
+            isLoading,
+            permissions,
+            initialPath,
+            maxFileSize,
             collapsibleNav,
+            filePreviewPath,
+            fileUploadConfig,
             acceptedFileTypes,
             enableFilePreview = true,
             defaultNavExpanded = true,
-            permissions: userPermissions,
-            fileUploadConfig,
-            isLoading,
-            actions,
-            layout = 'grid',
-            files,
-            icons,
             onCut,
             onCopy,
             onPaste,
+            onError,
             onSelect,
             onRename,
-            onDownload,
-            onError,
             onDelete,
             onRefresh,
+            onDownload,
             onFileOpen,
             onCreateFolder,
             onFolderChange,
             onLayoutChange,
             onFileUploaded,
             onFileUploading,
-            filePreviewPath,
             onSelectionChange,
             filePreviewComponent,
             formatDate = FileManager.formatDate,
-            ...props
+            ...restProps
         },
-        ref,
     }) => {
-        const [isNavigationPaneOpen, setNavigationPaneOpen] =
-            useState(defaultNavExpanded);
-        const triggerAction = useTriggerAction();
-        const {
-            containerRef,
-            colSizes,
-            isDragging,
-            handleMouseMove,
-            handleMouseUp,
-            handleMouseDown,
-        } = useColumnResize(20, 80);
-
-        const customStyles = {
-            '--file-manager-font-family': fontFamily,
-            '--file-manager-primary-color': primaryColor,
-            height,
-            width,
-        };
-
-        const permissions = useMemo(
-            () => ({ ...FileManager.defaultPermissions, ...userPermissions }),
-            [userPermissions],
-        );
+        console.log('render file manager');
 
         return (
-            <main
+            <Element
                 ref={ref}
                 className={`file-explorer ${className}`}
-                style={{ ...customStyles, ...style }}
-                {...props}
+                {...restProps}
             >
                 <Loader loading={isLoading} />
-                <TranslationProvider language={language}>
-                    <FilesProvider filesData={files} onError={onError}>
-                        <FileNavigationProvider
-                            initialPath={initialPath}
-                            onFolderChange={onFolderChange}
-                        >
-                            <SelectionProvider
-                                onSelect={onSelect}
-                                onDownload={onDownload}
-                                onSelectionChange={onSelectionChange}
-                            >
-                                <ClipBoardProvider
-                                    onCut={onCut}
-                                    onCopy={onCopy}
-                                    onPaste={onPaste}
-                                >
-                                    <LayoutProvider layout={layout}>
-                                        <Toolbar
-                                            onRefresh={onRefresh}
-                                            permissions={permissions}
-                                            triggerAction={triggerAction}
-                                            onLayoutChange={onLayoutChange}
-                                        />
-                                        <section
-                                            ref={containerRef}
-                                            onMouseUp={handleMouseUp}
-                                            className="files-container"
-                                            onMouseMove={handleMouseMove}
-                                        >
-                                            <div
-                                                className={`navigation-pane ${
-                                                    isNavigationPaneOpen
-                                                        ? 'open'
-                                                        : 'closed'
-                                                }`}
-                                                style={{
-                                                    width: colSizes.col1 + '%',
-                                                }}
-                                            >
-                                                <NavigationPane
-                                                    icons={icons}
-                                                    onFileOpen={onFileOpen}
-                                                />
-                                                <div
-                                                    className={`sidebar-resize ${
-                                                        isDragging
-                                                            ? 'sidebar-dragging'
-                                                            : ''
-                                                    }`}
-                                                    onMouseDown={
-                                                        handleMouseDown
-                                                    }
-                                                />
-                                            </div>
-
-                                            <div
-                                                className="folders-preview"
-                                                style={{
-                                                    width:
-                                                        (isNavigationPaneOpen
-                                                            ? colSizes.col2
-                                                            : 100) + '%',
-                                                }}
-                                            >
-                                                <CBreadCrumb
-                                                    collapsibleNav={
-                                                        collapsibleNav
-                                                    }
-                                                    isNavigationPaneOpen={
-                                                        isNavigationPaneOpen
-                                                    }
-                                                    setNavigationPaneOpen={
-                                                        setNavigationPaneOpen
-                                                    }
-                                                />
-                                                <CFileList
-                                                    icons={icons}
-                                                    actions={actions}
-                                                    onRename={onRename}
-                                                    onRefresh={onRefresh}
-                                                    formatDate={formatDate}
-                                                    onFileOpen={onFileOpen}
-                                                    permissions={permissions}
-                                                    triggerAction={
-                                                        triggerAction
-                                                    }
-                                                    onCreateFolder={
-                                                        onCreateFolder
-                                                    }
-                                                    enableFilePreview={
-                                                        enableFilePreview
-                                                    }
-                                                />
-                                            </div>
-                                        </section>
-                                        <Actions
-                                            fileUploadConfig={fileUploadConfig}
-                                            onFileUploading={onFileUploading}
-                                            onFileUploaded={onFileUploaded}
-                                            onDelete={onDelete}
-                                            onRefresh={onRefresh}
-                                            maxFileSize={maxFileSize}
-                                            filePreviewPath={filePreviewPath}
-                                            filePreviewComponent={
-                                                filePreviewComponent
-                                            }
-                                            acceptedFileTypes={
-                                                acceptedFileTypes
-                                            }
-                                            triggerAction={triggerAction}
-                                            permissions={permissions}
-                                        />
-                                    </LayoutProvider>
-                                </ClipBoardProvider>
-                            </SelectionProvider>
-                        </FileNavigationProvider>
-                    </FilesProvider>
-                </TranslationProvider>
-            </main>
+                <Providers
+                    color={color}
+                    layout={layout}
+                    filesData={files}
+                    language={language}
+                    initialPath={initialPath}
+                    onCut={onCut}
+                    onCopy={onCopy}
+                    onError={onError}
+                    onPaste={onPaste}
+                    onSelect={onSelect}
+                    onDownload={onDownload}
+                    onFolderChange={onFolderChange}
+                    onSelectionChange={onSelectionChange}
+                >
+                    <FileManagerChilds
+                        icons={icons}
+                        actions={actions}
+                        permissions={permissions}
+                        maxFileSize={maxFileSize}
+                        collapsibleNav={collapsibleNav}
+                        filePreviewPath={filePreviewPath}
+                        fileUploadConfig={fileUploadConfig}
+                        enableFilePreview={enableFilePreview}
+                        acceptedFileTypes={acceptedFileTypes}
+                        defaultNavExpanded={defaultNavExpanded}
+                        onRename={onRename}
+                        onDelete={onDelete}
+                        onRefresh={onRefresh}
+                        onFileOpen={onFileOpen}
+                        formatDate={formatDate}
+                        onCreateFolder={onCreateFolder}
+                        onLayoutChange={onLayoutChange}
+                        onFileUploaded={onFileUploaded}
+                        onFileUploading={onFileUploading}
+                        filePreviewComponent={filePreviewComponent}
+                    />
+                </Providers>
+            </Element>
         );
     },
-)();
+)(
+    (
+        {
+            width = '100%',
+            height = '100%',
+            fontFamily = 'Nunito Sans, sans-serif',
+        },
+        {},
+    ) => ({
+        us: 'n',
+        pos: 'r',
+        cur: 'd',
+        w: width,
+        h: height,
+        full: true,
+        fontF: fontFamily,
+    }),
+);

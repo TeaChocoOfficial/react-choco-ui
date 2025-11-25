@@ -7,6 +7,10 @@ import { useFiles } from '$Hook/fileManager/context/Files';
 import { FileManager } from '$Hook/fileManager/fileManager';
 import { useFileIcons } from '$Hook/fileManager/hook/useFileIcons';
 import { useTranslation } from '$Hook/fileManager/context/TranslationProvider';
+import { CText } from '$Compo/ui/CText';
+import { FileManagerCs } from '../cs';
+import { CList } from '$Compo/template/CList';
+import { CBox } from '$Compo/ui/CBox';
 
 interface UploadItemProps {
     index: number;
@@ -71,6 +75,8 @@ const UploadItem: React.FC<UploadItemProps> = ({
 
     const fileUpload = (fileData: FileManager.FileData): Promise<any> => {
         if (fileData.error) return Promise.reject('File has error');
+        if (!fileUploadConfig)
+            return Promise.reject("Don't have file upload config");
 
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
@@ -185,40 +191,65 @@ const UploadItem: React.FC<UploadItemProps> = ({
 
     const fileExtension = FileManager.getFileExtension(fileData.file?.name);
     const displayFileIcon = getFileIcons(fileExtension) ?? (
-        <CIcon icon="FaRegFile" size={33} />
+        <CIcon icon="FaRegFile" fontS={33} />
     );
 
     return (
-        <li>
-            <div className="file-icon">{displayFileIcon}</div>
-            <div className="file">
-                <div className="file-details">
-                    <div className="file-info">
-                        <span
-                            className="file-name text-truncate"
+        <CList.Item
+            dFlex
+            g={2}
+            pb={3}
+            mb={5}
+            brB={{ width: 0.5, color: 'primary' }}
+        >
+            <CBox w="10%" className="file-icon">
+                {displayFileIcon}
+            </CBox>
+            <CBox w="86%" className="file">
+                <CBox mb={1} dFlex aiCenter jcBetween className="file-details">
+                    <CBox w="90%" dFlex aiBaseline className="file-info">
+                        <CText
+                            tag="span"
+                            mr={2}
+                            dInlineB
+                            maxW="66%"
                             title={fileData.file?.name}
+                            cs={FileManagerCs.textTruncate}
+                            className="file-name text-truncate" //???text-truncate
                         >
                             {fileData.file?.name}
-                        </span>
-                        <span className="file-size">
+                        </CText>
+                        <CText tag="span" fontS={12} className="file-size">
                             {FileManager.getDataSize(fileData.file?.size)}
-                        </span>
-                    </div>
+                        </CText>
+                    </CBox>
                     {isUploaded ? (
                         <CIcon
-                            icon="FaRegCheckCircle"
+                            clr="success"
                             title={t('uploaded')}
+                            icon="FaRegCheckCircle"
                             className="upload-success"
                         />
                     ) : isCanceled || uploadFailed ? (
                         <CIcon
-                            icon="IoMdRefresh"
-                            className="retry-upload"
+                            curP
+                            p={1}
+                            circlr
                             title="Retry"
+                            icon="IoMdRefresh"
                             onClick={handleRetry}
+                            className="retry-upload"
+                            cs={{
+                                ':hover': {
+                                    clr: 'secondary',
+                                    bgClr: 'rgba(0, 0, 0, 0.07)',
+                                },
+                            }}
                         />
                     ) : (
-                        <div
+                        <CBox
+                            curP
+                            clr="error"
                             className="rm-file"
                             title={
                                 fileData.error ? t('remove') : t('abortUpload')
@@ -230,17 +261,17 @@ const UploadItem: React.FC<UploadItemProps> = ({
                             }
                         >
                             <CIcon icon="AiOutlineClose" />
-                        </div>
+                        </CBox>
                     )}
-                </div>
+                </CBox>
                 <Progress
+                    error={fileData.error}
                     percent={uploadProgress}
                     isCanceled={isCanceled}
                     isCompleted={isUploaded}
-                    error={fileData.error}
                 />
-            </div>
-        </li>
+            </CBox>
+        </CList.Item>
     );
 };
 

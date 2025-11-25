@@ -1,5 +1,4 @@
 //-Path: "react-choco-ui/lib/src/components/template/CIcon.tsx"
-import { tw } from '$/config/utils';
 import { ChocoUi } from '$Type/Choco';
 import { customUi } from '$/custom/customUi';
 import { CText, CTextType } from '../ui/CText';
@@ -9,8 +8,7 @@ export type CIconType = ChocoUi.Ui<
     typeof CText,
     IconProp &
         CTextType['Prop'] & {
-            size?: number;
-            color?: string;
+            color?: ChocoUi.Color.ColorKeys;
             disabled?: boolean;
         },
     CTextType['Element']
@@ -18,7 +16,7 @@ export type CIconType = ChocoUi.Ui<
 
 export function renderIcon<Render = React.ReactNode>(
     icon?: TypeIcon | React.ReactNode,
-    props?: CIconType['Prop'],
+    props?: CIconType['Props'],
 ): Render {
     if (typeof icon === 'string' && typeIcons.includes(icon as TypeIcon)) {
         return (<CIcon icon={icon as TypeIcon} {...props} />) as Render;
@@ -69,8 +67,7 @@ export const CIcon = customUi<CIconType>(
             brand,
             regular,
             props,
-            size,
-            className,
+
             ...textProps
         },
         ref,
@@ -116,13 +113,9 @@ export const CIcon = customUi<CIconType>(
         };
 
         return (
-            <CText
-                ref={ref}
-                className={tw(`dFlex aCenter jCenter size-${size}`, className)}
-                {...textProps}
-            >
+            <CText ref={ref} dFlex aiCenter {...textProps}>
                 <Icon {...iconProps} />
             </CText>
         );
     },
-)()
+)();

@@ -1,6 +1,6 @@
 //-Path: "react-choco-ui/view/src/app/FileManager.tsx"
 import { useState } from 'react';
-import C from '@teachoco-official/react-choco-ui';
+import C, { ChocoUi } from '@teachoco-official/react-choco-ui';
 
 export default function FileManager() {
     const [files, setFiles] = useState([
@@ -43,19 +43,23 @@ export default function FileManager() {
             size: 2048, // File size in bytes (example: 2 KB)
         },
     ]);
+
     return (
-        <C.Box className="h-screen" p="">
+        <C.Box screenH>
             <C.FileManager
+                color="success"
                 files={files}
+                collapsibleNav
                 actions={new Map([])}
                 language="th-TH"
+                layout="list"
                 permissions={{
                     copy: true,
                     move: true,
                     rename: true,
                     upload: true,
-                    create: false, // Disable "Create Folder"
-                    delete: false, // Disable "Delete"
+                    create: true, // Disable "Create Folder"
+                    delete: true, // Disable "Delete"
                     download: true, // Enable "Download"
                 }}
             />

@@ -1,6 +1,7 @@
 //-Path: "react-choco-ui/lib/src/components/template/fileManager/components/NavigationPane.tsx"
-import './NavigationPane.scss';
+// import './NavigationPane.scss';
 import { OBJ } from '$Hook/object';
+import { CBox } from '$Compo/ui/CBox';
 import { ChocoUi } from '$Type/Choco';
 import { FolderTree } from './FolderTree';
 import { useEffect, useState } from 'react';
@@ -20,17 +21,16 @@ export type NavigationPaneType = ChocoUi.Ui<
 export const NavigationPane = customUi<NavigationPaneType>(
     'div',
     'NavigationPane',
-)(({ props: { icons, onFileOpen } }) => {
-    const [foldersTree, setFoldersTree] = useState<FileManager.FileData[]>([]);
-    const { files } = useFiles();
+)(({ ref, Element, restProps: { icons, onFileOpen, ...restProps } }) => {
     const t = useTranslation();
+    const { files } = useFiles();
+    const [foldersTree, setFoldersTree] = useState<FileManager.FileData[]>([]);
 
     const createChildRecursive = (
         path: string,
         foldersStruct: Record<string, FileManager.FileData[]>,
     ): FileManager.FileData[] => {
         if (!foldersStruct[path]) return []; // No children for this path (folder)
-
         return (
             foldersStruct[path]?.map((folder) => {
                 return {
@@ -61,7 +61,7 @@ export const NavigationPane = customUi<NavigationPaneType>(
     }, [files]);
 
     return (
-        <div className="sb-folders-list">
+        <Element ref={ref} className="sb-folders-list" {...restProps}>
             {foldersTree?.length > 0 ? (
                 foldersTree?.map((folder, index) => (
                     <FolderTree
@@ -72,8 +72,10 @@ export const NavigationPane = customUi<NavigationPaneType>(
                     />
                 ))
             ) : (
-                <div className="empty-nav-pane">{t('nothingHereYet')}</div>
+                <CBox fullH dFlex jcCenter aiCenter className="empty-nav-pane">
+                    {t('nothingHereYet')}
+                </CBox>
             )}
-        </div>
+        </Element>
     );
-})();
+})({ mx: 1, fullH: true, ofy: 'a' });

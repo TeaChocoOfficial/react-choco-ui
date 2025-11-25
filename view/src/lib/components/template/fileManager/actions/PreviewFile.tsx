@@ -1,5 +1,6 @@
 //-Path: "react-choco-ui/lib/src/components/template/fileManager/actions/PreviewFile.tsx"
-import './PreviewFile.scss';
+// import './PreviewFile.scss';
+import { CBox } from '$Compo/ui/CBox';
 import { CIcon } from '$Compo/template/CIcon';
 import { Button } from '../components/Button';
 import { Loader } from '../components/Loader';
@@ -8,6 +9,13 @@ import { FileManager } from '$Hook/fileManager/fileManager';
 import { useFileIcons } from '$Hook/fileManager/hook/useFileIcons';
 import { useSelection } from '$Hook/fileManager/context/Selection';
 import { useTranslation } from '$Hook/fileManager/context/TranslationProvider';
+import { CImage } from '$Compo/template/media/CImage';
+import { useLayout } from '$Hook/fileManager/context/Layout';
+import { CIframe } from '$Compo/template/media/CIframe';
+import { CAudio } from '$Compo/template/media/CAudio';
+import { CVideo } from '$Compo/template/media/CVideo';
+import { CText } from '$Compo/ui/CText';
+import { CButton } from '$Compo/ui/CButton';
 
 interface PreviewFileActionProps {
     filePreviewPath?: string;
@@ -24,11 +32,12 @@ export const PreviewFileAction: React.FC<PreviewFileActionProps> = ({
     filePreviewComponent,
 }) => {
     const t = useTranslation();
+    const { color } = useLayout();
     const getFileIcons = useFileIcons(73);
     const { selectedFiles } = useSelection();
     const [hasError, setHasError] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const filePath = `${filePreviewPath}${selectedFiles[0].path}`;
+    const filePath = `${filePreviewPath ?? ''}${selectedFiles[0].path}`;
     const extension: string =
         FileManager.getFileExtension(selectedFiles[0].name)?.toLowerCase() ??
         '';
@@ -65,44 +74,90 @@ export const PreviewFileAction: React.FC<PreviewFileActionProps> = ({
     ].includes(extension);
 
     return (
-        <section
+        <CBox
+            tag="section"
+            p={8}
+            dFlex
+            jcCenter
+            fontS="base"
+            h={extension === 'pdf' ? '85dvh' : '40dvh'}
             className={`file-previewer ${
                 extension === 'pdf' ? 'pdf-previewer' : ''
             }`}
         >
-            {hasError || !isSupportedExtension ? (
-                <div className="preview-error">
-                    <span className="error-icon">
+            {(hasError || !isSupportedExtension) && (
+                <CBox
+                    g={2}
+                    dFlex
+                    column
+                    aiCenter
+                    jcCenter
+                    className="preview-error"
+                >
+                    <CText
+                        span
+                        g={2}
+                        dFlex
+                        column
+                        aiCenter
+                        jcCenter
+                        className="error-icon"
+                    >
                         {getFileIcons(extension) ?? (
-                            <CIcon icon="FaRegFileAlt" size={73} />
+                            <CIcon icon="FaRegFileAlt" fontS={73} />
                         )}
-                    </span>
-                    <span className="error-msg">{t('previewUnavailable')}</span>
-                    <div className="file-info">
-                        <span className="file-name">
+                    </CText>
+                    <CText
+                        span
+                        mb={1}
+                        fontS={18}
+                        fontW="medium"
+                        className="error-msg"
+                    >
+                        {t('previewUnavailable')}
+                    </CText>
+                    <CBox dFlex g={2} aiCenter my={1} className="file-info">
+                        <CText
+                            span
+                            px={1}
+                            py={4}
+                            borR={1}
+                            bgClr="paper"
+                            br={{ color: 'paper-5' }}
+                            className="file-name"
+                        >
                             {selectedFiles[0].name}
-                        </span>
+                        </CText>
                         {selectedFiles[0].size && <span>-</span>}
-                        <span className="file-size">
+                        <CText span fontS={0.8} className="file-size">
                             {FileManager.getDataSize(selectedFiles[0].size)}
-                        </span>
-                    </div>
-                    <Button onClick={handleDownload} p="0.45rem .9rem">
-                        <div className="download-btn">
-                            <CIcon icon="MdOutlineFileDownload" size={18} />
-                            <span>{t('download')}</span>
-                        </div>
-                    </Button>
-                </div>
-            ) : null}
+                        </CText>
+                    </CBox>
+                    <CButton
+                        color="info"
+                        onClick={handleDownload}
+                        className="download-btn"
+                    >
+                        <CIcon icon="MdOutlineFileDownload" fontS={18} />
+                        <CText span>{t('download')}</CText>
+                    </CButton>
+                </CBox>
+            )}
 
             {imageExtensions.includes(extension) && (
                 <>
                     <Loader loading={isLoading} />
-                    <img
+                    <CImage
                         src={filePath}
                         loading="lazy"
                         alt="Preview Unavailable"
+                        cs={{
+                            objectFit: 'contain',
+                            op: isLoading ? 0 : 1,
+                            br: { width: 0.5, color },
+                            delay: 'opacity 0.5s ease-in-out',
+                            wh: isLoading ? 0 : '-webkit-fill-available',
+                        }}
                         className={`photo-popup-image ${
                             isLoading ? 'img-loading' : ''
                         }`}
@@ -112,36 +167,40 @@ export const PreviewFileAction: React.FC<PreviewFileActionProps> = ({
                 </>
             )}
 
-            {videoExtensions.includes(extension) && (
-                <video
+            {videoExtensions.includes(extension) && (   
+                <CVideo
                     src={filePath}
-                    className="video-preview"
                     controls
                     autoPlay
+                    w="-webkit-fill-available"
+                    className="video-preview"
                 />
             )}
 
             {audioExtensions.includes(extension) && (
-                <audio
+                <CAudio
                     src={filePath}
+                    w="60%"
                     controls
                     autoPlay
+                    cs={{ alignSelf: 'center' }}
                     className="audio-preview"
                 />
             )}
 
             {iFrameExtensions.includes(extension) && (
-                <iframe
+                <CIframe
                     src={filePath}
+                    frameBorder={0}
+                    title="File Preview"
+                    w="-webkit-fill-available"
                     onLoad={handleImageLoad}
                     onError={handleImageError}
-                    frameBorder="0"
                     className={`photo-popup-iframe ${
                         isLoading ? 'img-loading' : ''
                     }`}
-                    title="File Preview"
-                ></iframe>
+                ></CIframe>
             )}
-        </section>
+        </CBox>
     );
 };

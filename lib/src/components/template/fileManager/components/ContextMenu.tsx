@@ -1,21 +1,19 @@
 //-Path: "react-choco-ui/lib/src/components/template/fileManager/components/ContextMenu.tsx"
-import './ContextMenu.scss';
+// import './ContextMenu.scss';
+import { CBox } from '$Compo/ui/CBox';
 import { ChocoUi } from '$Type/Choco';
 import { SetState } from '$Type/Type';
+import { CText } from '$Compo/ui/CText';
 import { customUi } from '$/custom/customUi';
+import { CList } from '$Compo/template/CList';
 import { CIcon } from '$Compo/template/CIcon';
 import { SubMenu, SubMenuType } from './SubMenu';
 import { useEffect, useRef, useState } from 'react';
 import { FileManager } from '$Hook/fileManager/fileManager';
 
-interface ClickPosition {
-    clickX: number;
-    clickY: number;
-}
-
 interface ContextMenuProps {
     visible: boolean;
-    clickPosition: ClickPosition;
+    clickPosition: FileManager.Position;
     setVisible?: SetState<boolean>;
     menuItems: FileManager.MenuItem[];
     filesViewRef: React.RefObject<HTMLDivElement>;
@@ -31,8 +29,8 @@ export const ContextMenu = customUi<ContextMenuType>(
         props: { visible, menuItems, setVisible, filesViewRef, clickPosition },
         ref: contextMenuRef,
     }) => {
-        const [left, setLeft] = useState<string>('0');
-        const [top, setTop] = useState<string>('0');
+        const [top, setTop] = useState(0);
+        const [left, setLeft] = useState(0);
         const [activeSubMenuIndex, setActiveSubMenuIndex] = useState<
             number | null
         >(null);
@@ -42,7 +40,7 @@ export const ContextMenu = customUi<ContextMenuType>(
         const subMenuRef = useRef<SubMenuType['Element']>(null);
 
         const contextMenuPosition = () => {
-            const { clickX, clickY } = clickPosition;
+            const { x, y } = clickPosition;
 
             const container = filesViewRef.current;
             if (!container || !contextMenuRef.current) return;
@@ -58,29 +56,29 @@ export const ContextMenu = customUi<ContextMenuType>(
             const menuHeight = contextMenuContainer.height;
 
             // Check if there is enough space at the right for the context menu
-            const leftToCursor = clickX - containerRect.left;
+            const leftToCursor = x - containerRect.left;
             const right =
                 containerRect.width - (leftToCursor + scrollBarWidth) >
                 menuWidth;
             const left = !right;
 
-            const topToCursor = clickY - containerRect.top;
+            const topToCursor = y - containerRect.top;
             const topSpace = containerRect.height - topToCursor > menuHeight;
             const bottom = !topSpace;
 
             if (right) {
-                setLeft(`${leftToCursor}px`);
+                setLeft(leftToCursor);
                 setSubMenuPosition('right');
             } else if (left) {
                 // Location: -width of the context menu from cursor's position i.e. left side
-                setLeft(`${leftToCursor - menuWidth}px`);
+                setLeft(leftToCursor - menuWidth);
                 setSubMenuPosition('left');
             }
 
             if (topSpace) {
-                setTop(`${topToCursor + container.scrollTop}px`);
+                setTop(topToCursor + container.scrollTop);
             } else if (bottom) {
-                setTop(`${topToCursor + container.scrollTop - menuHeight}px`);
+                setTop(topToCursor + container.scrollTop - menuHeight);
             }
         };
 
@@ -97,25 +95,41 @@ export const ContextMenu = customUi<ContextMenuType>(
             if (visible && contextMenuRef.current) {
                 contextMenuPosition();
             } else {
-                setTop('0');
-                setLeft('0');
+                setTop(0);
+                setLeft(0);
                 setActiveSubMenuIndex(null);
             }
         }, [visible, clickPosition]); // เพิ่ม clickPosition ใน dependencies ถ้าต้องการอัปเดตเมื่อ position เปลี่ยน
 
         if (visible) {
             return (
-                <div
+                <CBox
                     ref={contextMenuRef}
-                    style={{ top, left }}
+                    posA
+                    z={1}
+                    t={top}
+                    l={left}
+                    borR={2}
+                    fontS={16}
+                    bgClr="paper-4"
+                    delay="opacity 0.1s linear"
+                    br={{
+                        width: 1,
+                        color: 'paper-6',
+                    }}
+                    cs={{
+                        op: top !== 0 ? 1 : 0,
+                        event: top !== 0 ? 'a' : 'n',
+                        visibility: top !== 0 ? 'visible' : 'hidden',
+                    }}
                     onContextMenu={handleContextMenu}
                     onClick={(e) => e.stopPropagation()}
                     className={`fm-context-menu ${
-                        top !== '0' ? 'visible' : 'hidden'
+                        top !== 0 ? 'visible' : 'hidden'
                     }`} // ปรับเช็ค top !== '0' เพื่อความแม่นยำ
                 >
-                    <div className="file-context-menu-list">
-                        <ul>
+                    <CBox fontS={18} className="file-context-menu-list">
+                        <CList m={0} g={1} pl={0} dFlex column>
                             {menuItems
                                 .filter((item) => !item.hidden)
                                 .map((item, index) => {
@@ -125,29 +139,58 @@ export const ContextMenu = customUi<ContextMenuType>(
                                     const activeSubMenu =
                                         activeSubMenuIndex === index &&
                                         hasChildren;
+
                                     return (
-                                        <div key={`${item.title}-${index}`}>
+                                        <CBox key={`${item.title}-${index}`}>
                                             {' '}
                                             {/* ใช้ key ที่ unique กว่า */}
-                                            <li
-                                                onClick={item.onClick}
+                                            <CList.Item
+                                                posR
+                                                g={2}
+                                                dFlex
+                                                py={1}
+                                                px={3}
+                                                borR={1}
+                                                aiCenter
+                                                op={item.disablePaste ? 0.5 : 1}
+                                                bgClr={
+                                                    activeSubMenu
+                                                        ? 'rgb(0, 0, 0, 0.07)'
+                                                        : null
+                                                }
+                                                cs={{
+                                                    ':hover': {
+                                                        cur: item.disablePaste
+                                                            ? 'd'
+                                                            : 'p',
+                                                        bgClr: item.disablePaste
+                                                            ? null
+                                                            : 'rgb(0, 0, 0, 0.07)',
+                                                    },
+                                                }}
                                                 className={`${
-                                                    item.className ?? ''
+                                                    item.disablePaste
+                                                        ? 'disable-paste'
+                                                        : ''
                                                 } ${
                                                     activeSubMenu
                                                         ? 'active'
                                                         : ''
                                                 }`}
+                                                onClick={item.onClick}
                                                 onMouseOver={() =>
                                                     handleMouseOver(index)
                                                 }
                                             >
                                                 {item.icon}
-                                                <span>{item.title}</span>
+                                                <CText tag="span">
+                                                    {item.title}
+                                                </CText>
                                                 {hasChildren && (
                                                     <>
                                                         <CIcon
-                                                            size={14}
+                                                            ml="auto"
+                                                            fontS={14}
                                                             icon="FaChevronRight"
                                                             className="list-expand-icon"
                                                         />
@@ -164,21 +207,28 @@ export const ContextMenu = customUi<ContextMenuType>(
                                                         )}
                                                     </>
                                                 )}
-                                            </li>
+                                            </CList.Item>
                                             {item.divider &&
                                                 index !==
                                                     menuItems.filter(
                                                         (item) => !item.hidden,
                                                     ).length -
                                                         1 && (
-                                                    <div className="divider"></div>
+                                                    <CBox
+                                                        my={1}
+                                                        brB={{
+                                                            width: 0.25,
+                                                            color: 'primary',
+                                                        }}
+                                                        className="divider"
+                                                    />
                                                 )}
-                                        </div>
+                                        </CBox>
                                     );
                                 })}
-                        </ul>
-                    </div>
-                </div>
+                        </CList>
+                    </CBox>
+                </CBox>
             );
         }
         return null;

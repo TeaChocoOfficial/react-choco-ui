@@ -1,11 +1,15 @@
 //-Path: "react-choco-ui/lib/src/components/template/fileManager/CBreadCrumb.tsx"
 import { CIcon } from '../CIcon';
+import { CList } from '../CList';
 import { ARY } from '$Hook/array';
-import './styles/BreadCrumb.scss';
+import { CBox } from '$Compo/ui/CBox';
 import { ChocoUi } from '$Type/Choco';
-import { SetState } from '$Type/Type';
+import { CButton } from '$Compo/ui/CButton';
 import { customUi } from '$/custom/customUi';
-import { useEffect, useRef, useState } from 'react';
+import { CActivity } from '$Compo/config/CActivity';
+import { CIconButton } from '$Compo/ui/CIconButton';
+import { useLayout } from '$Hook/fileManager/context/Layout';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useFileNavigation } from '$Hook/fileManager/context/FileNavigation';
 import { useTranslation } from '$Hook/fileManager/context/TranslationProvider';
 import { useDetectOutsideClick } from '$Hook/fileManager/hook/useDetectOutsideClick';
@@ -20,7 +24,7 @@ type CBreadCrumbType = ChocoUi.Ui<
     {
         collapsibleNav?: boolean;
         isNavigationPaneOpen: boolean;
-        setNavigationPaneOpen: SetState<boolean>;
+        switchNavigationPane: () => void;
     }
 >;
 
@@ -29,14 +33,16 @@ export const CBreadCrumb = customUi<CBreadCrumbType>(
     'CBreadCrumb',
 )(
     ({
+        ref,
+        theme,
         props: {
             collapsibleNav = false,
             isNavigationPaneOpen,
-            setNavigationPaneOpen,
+            switchNavigationPane,
         },
-        ref,
     }) => {
         const t = useTranslation();
+        const { color } = useLayout();
         const navTogglerRef = useRef<HTMLDivElement>(null);
         const breadCrumbRef = useRef<HTMLDivElement>(null);
         const moreBtnRef = useRef<HTMLButtonElement>(null);
@@ -74,7 +80,7 @@ export const CBreadCrumb = customUi<CBreadCrumbType>(
             onFolderChange?.(path);
         };
 
-        const getBreadCrumbWidth = (): number => {
+        const getBreadCrumbWidth = useCallback((): number => {
             if (!breadCrumbRef.current) return 0;
 
             const containerWidth = breadCrumbRef.current.clientWidth;
@@ -91,7 +97,7 @@ export const CBreadCrumb = customUi<CBreadCrumbType>(
                 parseFloat(containerStyles.gap) *
                 (folders.length + moreBtnGap + navTogglerGap);
             return containerWidth - (paddingLeft + flexGap + navTogglerWidth);
-        };
+        }, [breadCrumbRef, collapsibleNav]);
 
         const checkAvailableSpace = (): number => {
             const availableSpace = getBreadCrumbWidth();
@@ -148,43 +154,69 @@ export const CBreadCrumb = customUi<CBreadCrumbType>(
             }
         }, [folders, hiddenFolders, hiddenFoldersWidth]);
 
+        const folderNameCs: ChocoUi.Style.CS = {
+            g: 4,
+            dp: 'f',
+            ai: 'c',
+            fontW: 500,
+            minW: 'fit-content',
+            ':hover': { cur: 'p', clr: color },
+        };
+
         return (
-            <div ref={ref} className="bread-crumb-container">
-                <div className="breadcrumb" ref={breadCrumbRef}>
-                    {collapsibleNav && (
-                        <>
-                            <div
-                                ref={navTogglerRef}
-                                className="nav-toggler"
-                                title={`${
+            <CBox ref={ref} posR fontS={16} className="bread-crumb-container">
+                <CBox
+                    ref={breadCrumbRef}
+                    ofxH
+                    dFlex
+                    g={2}
+                    pl={2}
+                    py={1.5}
+                    // p="6px 0 6px 16px"
+                    className="breadcrumb"
+                    allH={theme.font.size.base * 2}
+                    brB={{ width: 0.25, color: 'primary' }}
+                    cs={{
+                        '&::-webkit-scrollbar': { h: 3 },
+                        '&::-webkit-scrollbar-thumb': {
+                            bg: 'var(--file-manager-primary-color) !important',
+                        },
+                    }}
+                >
+                    <CActivity show={collapsibleNav}>
+                        <CBox
+                            ref={navTogglerRef}
+                            dFlex
+                            aiCenter
+                            title={t(
+                                isNavigationPaneOpen
+                                    ? 'collapseNavigationPane'
+                                    : 'expandNavigationPane',
+                            )}
+                            className="nav-toggler"
+                        >
+                            <CIconButton
+                                cs={folderNameCs}
+                                onClick={switchNavigationPane}
+                                className="folder-name folder-name-btn"
+                                icon={
                                     isNavigationPaneOpen
-                                        ? t('collapseNavigationPane')
-                                        : t('expandNavigationPane')
-                                }`}
-                            >
-                                <span
-                                    className="folder-name folder-name-btn"
-                                    onClick={() =>
-                                        setNavigationPaneOpen((prev) => !prev)
-                                    }
-                                >
-                                    {isNavigationPaneOpen ? (
-                                        <CIcon icon="TbLayoutSidebarLeftCollapseFilled" />
-                                    ) : (
-                                        <CIcon icon="TbLayoutSidebarLeftExpand" />
-                                    )}
-                                </span>
-                            </div>
-                            <div className="divider" />
-                        </>
-                    )}
+                                        ? 'TbLayoutSidebarLeftCollapseFilled'
+                                        : 'TbLayoutSidebarLeftExpand'
+                                }
+                            />
+                        </CBox>
+                        <CBox className="divider" w={1} bgClr="primary" />
+                    </CActivity>
                     {folders.map((folder, index) => (
-                        <div key={index} style={{ display: 'contents' }}>
-                            <span
+                        <CBox key={index} dContents>
+                            <CBox
+                                tag="span"
+                                cs={folderNameCs}
                                 className="folder-name"
                                 onClick={() => switchPath(folder.path)}
-                                ref={(el) => {
-                                    foldersRef.current[index] = el;
+                                ref={(element) => {
+                                    foldersRef.current[index] = element;
                                 }}
                             >
                                 {index === 0 ? (
@@ -193,44 +225,62 @@ export const CBreadCrumb = customUi<CBreadCrumbType>(
                                     <CIcon icon="MdOutlineNavigateNext" />
                                 )}
                                 {folder.name}
-                            </span>
+                            </CBox>
                             {hiddenFolders?.length > 0 && index === 0 && (
-                                <button
+                                <CButton
+                                    ref={moreBtnRef}
+                                    cs={folderNameCs}
+                                    title={t('showMoreFolder')}
                                     className="folder-name folder-name-btn"
                                     onClick={() => setShowHiddenFolders(true)}
-                                    ref={moreBtnRef}
-                                    title={t('showMoreFolder')}
                                 >
                                     <CIcon
+                                        fontS={22}
                                         icon="MdMoreHoriz"
-                                        size={22}
                                         className="hidden-folders"
                                     />
-                                </button>
+                                </CButton>
                             )}
-                        </div>
+                        </CBox>
                     ))}
-                </div>
-
+                </CBox>
                 {showHiddenFolders && (
-                    <ul
+                    <CList
                         ref={popoverRef.ref}
+                        p={1}
+                        g={1}
+                        z={2}
+                        posA
+                        dFlex
+                        column
+                        l={42}
+                        borR={2}
+                        bg="red"
+                        clr="red"
                         className="hidden-folders-container"
                     >
                         {hiddenFolders.map((folder, index) => (
-                            <li
+                            <CList.Item
                                 key={index}
+                                py={1}
+                                px={2}
+                                cs={{
+                                    ':hover': {
+                                        cur: 'p',
+                                        bgClr: 'blue',
+                                    },
+                                }}
                                 onClick={() => {
                                     switchPath(folder.path);
                                     setShowHiddenFolders(false);
                                 }}
                             >
                                 {folder.name}
-                            </li>
+                            </CList.Item>
                         ))}
-                    </ul>
+                    </CList>
                 )}
-            </div>
+            </CBox>
         );
     },
 )();

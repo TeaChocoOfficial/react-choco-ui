@@ -5,13 +5,16 @@ import { customUi } from '$/custom/customUi';
 export type CButtonType = ChocoUi.Ui<'button', ChocoUi.Custom.ContainerProps>;
 
 export const CButton = customUi<CButtonType>('button', 'CButton')()(
-    ({ text, color, outline, disabled }, { theme, chocoColor }) => {
+    ({ sz, text, color, outline, disabled }, { theme, chocoColor }) => {
         const styles = chocoColor.style({ text, color, outline, disabled });
-        console.log(styles);
-
         return {
-            py: 2,
-            px: 4,
+            g: sz * 2,
+            py: sz * 2,
+            px: sz * 4,
+            dp: 'f',
+            ai: 'c',
+            jc: 'c',
+            cur: 'p',
             borR: theme.shape.border.radius,
             ...styles.cs,
         };

@@ -1,16 +1,22 @@
 //-Path: "react-choco-ui/lib/src/components/config/CActivity.tsx"
-import { Activity, ActivityProps, useMemo } from 'react';
+import { Activity, ActivityProps } from 'react';
 
-type CActivityProps = ActivityProps & { hide?: boolean; show?: boolean };
+type CActivityProps = Omit<ActivityProps, 'children'> & {
+    hide?: boolean;
+    show?: boolean;
+    children?: React.ReactNode;
+};
 
 export const CActivity: React.FC<CActivityProps> = ({
     mode,
     show,
     hide,
+    children,
     ...prop
-}) => {
-    const finalMode = useMemo(
-        () =>
+}) => (
+    <Activity
+        {...prop}
+        mode={
             mode ??
             (show !== undefined
                 ? show
@@ -18,10 +24,11 @@ export const CActivity: React.FC<CActivityProps> = ({
                     : 'hidden'
                 : hide
                 ? 'hidden'
-                : 'visible'),
-        [mode, show, hide],
-    );
-    return <Activity {...prop} mode={finalMode} />;
-};
+                : 'visible')
+        }
+    >
+        {children}
+    </Activity>
+);
 
 CActivity.displayName = 'CActivity';

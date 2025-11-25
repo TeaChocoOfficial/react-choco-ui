@@ -7,13 +7,6 @@ export type CCheckboxType = ChocoUi.Ui<'input'>;
 export const CCheckbox = customUi<CCheckboxType>(
     'input',
     'CCheckbox',
-)(({ props: { className, ...props }, ref }) => {
-    return (
-        <input
-            ref={ref}
-            className={`fm-checkbox ${className}`}
-            {...props}
-            type="checkbox"
-        />
-    );
-})()
+)(({ Element, restProps: { ...restProps }, ref }) => (
+    <Element ref={ref} {...restProps} type="checkbox" />
+))({ cur: 'p' });

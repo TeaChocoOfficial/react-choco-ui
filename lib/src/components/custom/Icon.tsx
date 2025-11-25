@@ -433,9 +433,7 @@ export function Icon(iconProps: IconProp): React.ReactElement | null {
     for (const { key, value } of reactIconsMap) {
         if (value) {
             const IconComponent = getReactIcon(key, value);
-            if (IconComponent) {
-                return renderReactIcon(IconComponent, props);
-            }
+            if (IconComponent) return renderReactIcon(IconComponent, props);
         }
     }
 

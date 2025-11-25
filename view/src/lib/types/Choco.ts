@@ -2,6 +2,7 @@
 import * as CSSType from 'csstype';
 import { CColor } from '$/custom/color/CColor';
 import { StyledComponent } from '@emotion/styled';
+import { DeepPartial, Obj } from '@teachoco-dev/cli';
 import { ChocoShade } from '$/custom/color/ChocoShade';
 import { ChocoColor } from '$/custom/color/ChocoColor';
 
@@ -25,7 +26,7 @@ export namespace ChocoUi {
                 | ReadonlyArray<Extract<CSSProperties[K], string>>;
         };
 
-        export interface CSSObject extends Cs, CSSOthers, CSSOthersObject {}
+        export type CSSObject = Cs & CSSOthers & CSSOthersObject;
         export type CSSOthers = CSSPseudos & CSSPropertiesWithMultiValues;
 
         export type CSSPseudos = { [K in CSSType.Pseudos]?: CSSObject };
@@ -44,6 +45,18 @@ export namespace ChocoUi {
             | ArrayInterpolation<Props>
             | FunctionInterpolation<Props>;
         export type CS = Interpolation<Theme>;
+
+        export type Line =
+            | 'dotted'
+            | 'dashed'
+            | 'solid'
+            | 'double'
+            | 'groove'
+            | 'ridge'
+            | 'inset'
+            | 'outset'
+            | 'none'
+            | 'hidden';
     }
     export namespace Color {
         export type Hex = `#${string}`;
@@ -108,6 +121,7 @@ export namespace ChocoUi {
             'info',
             'warn',
             'error',
+            'paper',
             'success',
             'inverse',
             'primary',
@@ -120,6 +134,7 @@ export namespace ChocoUi {
             'infoText',
             'warnText',
             'errorText',
+            'paperText',
             'successText',
             'inverseText',
             'primaryText',
@@ -135,16 +150,27 @@ export namespace ChocoUi {
         export type Colors = { [key in Shade.Key]: CColor };
 
         export type Palette = {
-            common: Record<string, Color.Colors>;
-        } & Record<Color.PaletteKey, Record<Color.Main, Color.Colors>>;
+            common: Record<Theme.CommonKeys, ChocoShade>;
+        } & Record<Color.PaletteKey, Record<Color.Main, ChocoShade>>;
+
+        export type ColorMap = Record<
+            ChocoUi.Color.ColorType,
+            ChocoUi.Color.Colors
+        >;
 
         export type ColorType = Main | Text | PaletteKey;
+        export type ColorKey = `${ColorType}-${Shade.Key}`;
+        export type ColorKeys = ColorType | ColorKey;
+
+        export type CommonType = `common.${Theme.CommonKeys}`;
+        export type CommonKey = `${CommonType}-${Shade.Key}`;
+        export type CommonKeys = CommonType | CommonKey;
 
         export type ColorsType =
-            | React.CSSProperties['color']
-            | `${ColorType}-${Shade.Key}`
+            | Style.CSSProperties['color']
             | Color.Type
-            | ColorType
+            | CommonKeys
+            | ColorKeys
             | Colors;
 
         export namespace Set {
@@ -168,8 +194,8 @@ export namespace ChocoUi {
                 borDisabledHover: CColor | null; //สีขอบตอนปิดตอนชี้
             };
             export type Colors = {
-                text: ColorType;
-                main: ColorType;
+                text: ColorKeys;
+                main: ColorKeys;
             };
             export type Shades = {
                 text: ChocoShade;
@@ -188,6 +214,7 @@ export namespace ChocoUi {
                 outline?: boolean;
                 disabled?: boolean;
                 isBorder?: boolean;
+                container?: boolean;
                 defaultColor?: ColorType;
             };
 
@@ -203,6 +230,7 @@ export namespace ChocoUi {
         }
 
         export namespace Shade {
+            export const keys = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
             export type Key = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
             export type MapCallbackFn<MapCallback> = (
                 color: CColor,
@@ -217,6 +245,63 @@ export namespace ChocoUi {
         }
     }
 
+    export namespace Theme {
+        export type Mode = 'dark' | 'light';
+        export type Def = Record<Mode | 'def', DeepPartial<Theme>> & {
+            mode: Mode;
+        };
+        export type CommonKeys =
+            | 'body'
+            | 'surface'
+            | 'overlay'
+            | 'gray'
+            | 'blue'
+            | 'green'
+            | 'red'
+            | 'orange';
+        export type ZindexKeys =
+            | 'hide'
+            | 'base'
+            | 'docked'
+            | 'dropdown'
+            | 'sticky'
+            | 'banner'
+            | 'overlay'
+            | 'appBar'
+            | 'modal'
+            | 'popover'
+            | 'skipLink'
+            | 'toast'
+            | 'tooltip';
+        export type CreateFunc = (options: {
+            theme: Def;
+            CColor: typeof CColor;
+            ChocoShade: typeof ChocoShade;
+        }) => Partial<Def>;
+        export type Create = CreateFunc | Partial<Def>;
+        export namespace Font {
+            export const sizes = [
+                'xs',
+                'sm',
+                'base',
+                'lg',
+                'xl',
+                '2xl',
+                '3xl',
+                '4xl',
+            ] as const;
+            export type Size = (typeof sizes)[number];
+
+            export type Weight =
+                | 'light'
+                | 'normal'
+                | 'medium'
+                | 'semibold'
+                | 'bold'
+                | 'extrabold';
+        }
+    }
+
     export interface Theme {
         responsive: {
             keys: Size.Key[];
@@ -226,118 +311,190 @@ export namespace ChocoUi {
             breakpoints: Record<Size.Key, number>;
         };
         palette: Color.Palette;
-        typography: {
-            fontFamily: string;
-            fontSize: {
-                small: string;
-                medium: string;
-                large: string;
-            };
+        font: {
+            unit: string;
+            divide: number;
+            family: string;
+            size: Record<Theme.Font.Size, number>;
+            weight: Record<Theme.Font.Weight, number>;
         };
         shape: {
-            border: {
-                width: number;
-                radius: number;
-            };
+            border: { width: number; radius: number };
+            shadows: string[];
         };
         shadows: string[];
-        zIndex: {
-            mobileStepper: number;
-            fab: number;
-            speedDial: number;
-            appBar: number;
-            drawer: number;
-            modal: number;
-            snackbar: number;
-            tooltip: number;
-        };
+        zIndex: Record<Theme.ZindexKeys, number>;
     }
+
     export namespace Size {
         export type Key = 'm' | 't' | 'l' | 'd';
         export type Obj = { [K in Key]?: Value };
         export type Value = string | number | undefined;
         export type Function = (percent: number, key: Key) => Value;
+        export type CSSLengthUnit = 'px' | 'em' | 'rem' | '%' | 'vh' | 'vw';
         export type Lines = {
             width?: Value;
+            style?: Style.Line;
             color?: Color.ColorsType;
-            style?:
-                | 'dotted'
-                | 'dashed'
-                | 'solid'
-                | 'double'
-                | 'groove'
-                | 'ridge'
-                | 'inset'
-                | 'outset'
-                | 'none'
-                | 'hidden';
         };
     }
-    export interface Ui<
-        Tag extends Custom.TagKey = 'div',
+    export type Ui<
+        DefaultTag extends Custom.TagKey = 'div',
         Props extends object = {},
-        ElementType = Tag extends keyof HTMLElementTagNameMap
-            ? HTMLElementTagNameMap[Tag]
-            : HTMLElement,
-    > {
-        Tag: Tag;
-        Prop: Custom.Props<Tag, Props>;
-        RefObj: React.RefObject<ElementType>;
+        ElementType = Custom.InferElementType<
+            Custom.InferTagFromProps<
+                Custom.Props<DefaultTag, Props>,
+                DefaultTag
+            >
+        >,
+    > = {
+        Tag: Custom.InferTagFromProps<
+            Custom.Props<DefaultTag, Props>,
+            DefaultTag
+        >;
+        Prop: Custom.Prop<DefaultTag, Props>;
+        Props: Custom.Props<DefaultTag, Props>;
+        RefObj: React.RefObject<
+            Custom.InferElementType<
+                Custom.InferTagFromProps<
+                    Custom.Props<DefaultTag, Props>,
+                    DefaultTag
+                >
+            >
+        >;
         Element: ElementType;
         Component: React.ForwardRefExoticComponent<
-            Custom.Props<Tag, Props> & React.RefAttributes<ElementType>
+            Custom.Props<DefaultTag, Props> &
+                React.RefAttributes<
+                    Custom.InferElementType<
+                        Custom.InferTagFromProps<
+                            Custom.Props<DefaultTag, Props>,
+                            DefaultTag
+                        >
+                    >
+                >
         >;
-    }
+    };
+    export type Uis<
+        Ui extends ChocoUi.Ui<any, any, any>,
+        Items extends Record<string, ChocoUi.Ui<any, any, any>> = {},
+    > = React.ForwardRefExoticComponent<
+        React.PropsWithoutRef<Ui['Props']> & React.RefAttributes<Ui['Element']>
+    > & {
+        [Key in keyof Items]: React.ForwardRefExoticComponent<
+            React.PropsWithoutRef<Items[Key]['Props']> &
+                React.RefAttributes<Items[Key]['Element']>
+        >;
+    };
     export namespace Custom {
         export type TagKey =
             | keyof React.JSX.IntrinsicElements
             | React.ComponentType<any>;
+        export type InferElementType<T extends TagKey> =
+            T extends keyof HTMLElementTagNameMap
+                ? HTMLElementTagNameMap[T]
+                : T extends keyof SVGElementTagNameMap
+                ? SVGElementTagNameMap[T]
+                : HTMLElement;
+
+        export type InferElementFromProps<
+            Props extends object,
+            Element,
+        > = Props extends { tag?: infer CustomTag }
+            ? CustomTag extends TagKey
+                ? InferElementType<CustomTag>
+                : Element
+            : Element;
+
+        export type InferTagFromProps<
+            Props extends object,
+            Tag extends TagKey,
+        > = Tag;
+        // Props extends { tag?: infer CustomTag }
+        //     ? CustomTag extends TagKey
+        //         ? CustomTag
+        //         : Tag
+        //     : Tag;
+
+        export type IntrinsicElement<Tag> =
+            Tag extends keyof React.JSX.IntrinsicElements
+                ? React.JSX.IntrinsicElements[Tag]
+                : never;
+
         export type Element<
             ComponentProps extends {},
             SpecificComponentProps extends {} = {},
             JSXProps extends {} = {},
         > = StyledComponent<ComponentProps, SpecificComponentProps, JSXProps>;
 
-        export type Props<
-            Tag extends TagKey,
-            ExtraProps = {},
-        > = React.ComponentPropsWithoutRef<Tag> & { cs?: Style.CS } & Cs &
+        export type Prop<Tag extends TagKey, ExtraProps = {}> = Omit<
+            React.ComponentPropsWithoutRef<Tag>,
+            keyof ExtraProps
+        > &
             ExtraProps;
 
+        export type Props<Tag extends TagKey, ExtraProps = {}> = Omit<
+            React.ComponentPropsWithoutRef<Tag>,
+            keyof ExtraProps
+        > &
+            SuppleProps &
+            Cs &
+            ExtraProps;
+
+        export interface SuppleProps {
+            sz?: number;
+            cs?: Style.CS;
+            tag?: TagKey;
+        }
         export interface StyleProp<ElementType extends TagKey> {
             theme?: Theme;
             as?: ElementType;
         }
 
         export interface RenderProp<Ui extends ChocoUi.Ui> {
-            ref: React.RefObject<Ui['Element']>;
-            props: Ui['Prop'];
+            ref: React.RefObject<
+                Ui['Element']
+                // InferElementFromProps<Ui['Prop'], Ui['Element']>
+            >;
+            theme: Theme;
+            props: Ui['Props'] & { sz: number };
             Element: Element<
                 React.JSX.LibraryManagedAttributes<
                     Ui['Tag'],
                     React.ComponentProps<Ui['Tag']>
                 > & { theme?: Theme }
             >;
+            restProps: Ui['Prop'];
+            chocoColor: ChocoColor;
+            ChocoShade: typeof ChocoShade;
         }
 
         export type StyledProp<Ui extends ChocoUi.Ui> = StyleProp<Ui['Tag']> &
-            React.JSX.IntrinsicElements[Ui['Tag']] & {
+            IntrinsicElement<Ui['Tag']> & {
                 theme: Theme;
                 chocoColor: ChocoColor;
+                ChocoShade: typeof ChocoShade;
             };
 
-        export type Render<Ui extends ChocoUi.Ui<any, any, any>> = (
+        export type Render<Ui extends ChocoUi.Ui> = (
             render?: (prop: RenderProp<Ui>) => React.ReactNode,
         ) => Styled<Ui>;
 
+        export type StyledFunc<Ui extends ChocoUi.Ui> = (
+            props: Ui['Props'] & { sz: number },
+            styleProp: StyledProp<Ui>,
+        ) => Style.CSS;
+
         export type Styled<Ui extends ChocoUi.Ui> = (
-            style?:
-                | Style.CSS
-                | ((props: Ui['Prop'], styleProp: StyledProp<Ui>) => Style.CSS),
-        ) => React.ForwardRefExoticComponent<
-            React.PropsWithoutRef<Ui['Prop']> &
-                React.RefAttributes<Ui['Element']>
-        >;
+            style?: Style.CSS | StyledFunc<Ui>,
+        ) => Component<Ui>;
+
+        export type Component<Ui extends ChocoUi.Ui<any>> =
+            React.ForwardRefExoticComponent<
+                React.PropsWithoutRef<Ui['Props']> &
+                    React.RefAttributes<Ui['Element']>
+            >;
+
         export interface ContainerProp {
             color?: Color.ColorType;
             variant?: 'text' | 'outline' | 'container';
@@ -346,6 +503,7 @@ export namespace ChocoUi {
             text?: boolean;
             outline?: boolean;
             disabled?: boolean;
+            container?: boolean;
         }
     }
 
@@ -360,7 +518,7 @@ export namespace ChocoUi {
         op?: number;
 
         /** Z-index for layering. */
-        z?: number;
+        z?: Theme.ZindexKeys | number;
 
         /** Inset (all sides). */
         i?: Size.Value;
@@ -434,28 +592,40 @@ export namespace ChocoUi {
         gy?: Size.Value;
 
         /** Border width. */
-        borW?: Size.Value;
+        borW?: Size.Value | null;
+        borWT?: Size.Value | null;
+        borWL?: Size.Value | null;
+        borWR?: Size.Value | null;
+        borWB?: Size.Value | null;
 
         /** Border radius (all corners). */
-        borR?: Size.Value;
+        borR?: Size.Value | null;
 
         /** Border radius top-left. */
-        borRTL?: Size.Value;
+        borRTL?: Size.Value | null;
 
         /** Border radius top-right. */
-        borRTR?: Size.Value;
+        borRTR?: Size.Value | null;
 
         /** Border radius bottom-left. */
-        borRBL?: Size.Value;
+        borRBL?: Size.Value | null;
 
         /** Border radius bottom-right. */
-        borRBR?: Size.Value;
+        borRBR?: Size.Value | null;
 
         /** Border style. */
-        borS?: string | null;
+        borS?: Style.Line | null;
+        borST?: Style.Line | null;
+        borSL?: Style.Line | null;
+        borSR?: Style.Line | null;
+        borSB?: Style.Line | null;
 
         /** Border color. */
         borClr?: Color.ColorsType;
+        borClrT?: Color.ColorsType;
+        borClrL?: Color.ColorsType;
+        borClrR?: Color.ColorsType;
+        borClrB?: Color.ColorsType;
 
         /** Border (all sides). */
         br?: Size.Lines | string | null;
@@ -487,19 +657,22 @@ export namespace ChocoUi {
         maxH?: Size.Value;
         maxW?: Size.Value;
         maxWh?: Size.Value;
+        allH?: Size.Value;
+        allW?: Size.Value;
+        allWh?: Size.Value;
 
         /**
          * @remarks Font size for text.
          * @param value - Number or string (e.g., "24px", "2rem", 16).
          * @example "24px" | "2rem" | 16
          */
-        fontS?: Size.Value;
+        fontS?: Theme.Font.Size | (string & {}) | number;
+
+        /** Font weight. */
+        fontW?: Theme.Font.Weight | (string & {}) | number;
 
         /** Font family. */
         fontF?: string;
-
-        /** Font weight. */
-        fontW?: Size.Value;
 
         /** Text transform */
         txtTf?: Size.Value;
@@ -507,21 +680,39 @@ export namespace ChocoUi {
         /** Text decoration */
         txtDr?: Size.Value;
 
-        /** Transition duration or style. */
+        /** Transition or style. */
         delay?: Size.Value;
 
         /** Transform style (e.g., rotate, scale). */
         trans?: string | null;
 
+        /** Flex. */
+        flx?: Size.Value;
+
         /** Content */
         coten?: string;
+
+        /** Border radius 50% */
+        circlr?: boolean;
 
         full?: boolean;
         fullW?: boolean;
         fullH?: boolean;
+        fullMin?: boolean;
+        fullMinW?: boolean;
+        fullMinH?: boolean;
+        fullMax?: boolean;
+        fullMaxW?: boolean;
+        fullMaxH?: boolean;
         screen?: boolean;
         screenW?: boolean;
         screenH?: boolean;
+        screenMin?: boolean;
+        screenMinW?: boolean;
+        screenMinH?: boolean;
+        screenMax?: boolean;
+        screenMaxW?: boolean;
+        screenMaxH?: boolean;
         bg?: Color.ColorsType;
         clr?: Color.ColorsType;
         bgClr?: Color.ColorsType;
@@ -531,16 +722,15 @@ export namespace ChocoUi {
         export const styleKeys = {
             dp: 'display',
             fd: 'flexDirection',
-            fw: 'flexWrap',
             ac: 'alignContent',
-            a: 'alignItems',
-            j: 'justifyContent',
+            ai: 'alignItems',
+            jc: 'justifyContent',
             ji: 'justifyItems',
-            txtA: 'textAlign',
+            ta: 'textAlign',
             pos: 'position',
             of: 'overflow',
-            ofx: 'overflow',
-            ofy: 'overflow',
+            ofx: 'overflowX',
+            ofy: 'overflowY',
             event: 'pointerEvents',
             cur: 'cursor',
             us: 'userSelect',
@@ -549,6 +739,9 @@ export namespace ChocoUi {
         export type StyleKeys = keyof typeof styleKeys;
         export type StyleKeysValue = (typeof styleKeys)[StyleKeys];
         export interface Style extends Partial<Record<StyleKeys, any>> {
+            //* Flex wrap
+            fWrap?: boolean;
+
             //* Display
             //? none flex block inline inline-flex inline-block grid inline-grid table inline-table
             dp?: DisplayKey;
@@ -557,20 +750,17 @@ export namespace ChocoUi {
             //? unset row reverse-row column reverse-column inherit
             fd?: FlexDirKey;
 
-            //* Flex wrap
-            fw?: boolean;
-
             //* Align content
             //? unset flex-end flex-start center space-around space-between stretch
             ac?: AlignContentKey;
 
             //* Align items
             //? unset flex-end flex-start center space-around space-between stretch
-            a?: AlignItemsKey;
+            ai?: AlignItemsKey;
 
             //* Justify content
             //? unset flex-end flex-start center space-around space-between space-evenly
-            j?: JustifyContentKey;
+            jc?: JustifyContentKey;
 
             //* Justify items
             //? unset end start center
@@ -578,7 +768,7 @@ export namespace ChocoUi {
 
             //* Text align
             //? unset end left start right center justify
-            txtA?: TextAlignKey;
+            ta?: TextAlignKey;
 
             //* Position
             //? unset relative absolute fixed sticky
@@ -607,6 +797,116 @@ export namespace ChocoUi {
             bxSz?: string;
         }
 
+        export const propsKeys: (
+            | keyof Cs
+            | StyleKeys
+            | keyof Custom.SuppleProps
+        )[] = [
+            'sz',
+            'cs',
+            'tag',
+
+            'bShadow',
+            'tShadow',
+            'op',
+            'z',
+            'i',
+            't',
+            'b',
+            'l',
+            'r',
+            'x',
+            'y',
+            'p',
+            'pt',
+            'pb',
+            'pl',
+            'pr',
+            'px',
+            'py',
+            'm',
+            'mt',
+            'mb',
+            'ml',
+            'mr',
+            'mx',
+            'my',
+            'g',
+            'gx',
+            'gy',
+            'borW',
+            'borWT',
+            'borWL',
+            'borWR',
+            'borWB',
+            'borR',
+            'borRTL',
+            'borRTR',
+            'borRBL',
+            'borRBR',
+            'borS',
+            'borST',
+            'borSL',
+            'borSR',
+            'borSB',
+            'borClr',
+            'borClrT',
+            'borClrL',
+            'borClrR',
+            'borClrB',
+            'br',
+            'brT',
+            'brB',
+            'brL',
+            'brR',
+            'brX',
+            'brY',
+            'h',
+            'w',
+            'wh',
+            'minH',
+            'minW',
+            'minWh',
+            'maxH',
+            'maxW',
+            'maxWh',
+            'allH',
+            'allW',
+            'allWh',
+            'fontS',
+            'fontW',
+            'fontF',
+            'txtTf',
+            'txtDr',
+            'delay',
+            'trans',
+            'flx',
+            'coten',
+            'circlr',
+            'full',
+            'fullW',
+            'fullH',
+            'fullMin',
+            'fullMinW',
+            'fullMinH',
+            'fullMax',
+            'fullMaxW',
+            'fullMaxH',
+            'screen',
+            'screenW',
+            'screenH',
+            'screenMin',
+            'screenMinW',
+            'screenMinH',
+            'screenMax',
+            'screenMaxW',
+            'screenMaxH',
+            'bg',
+            'clr',
+            'bgClr',
+            ...Obj.keys(styleKeys),
+        ];
+
         export type SetProp<KeyType extends string> = {
             [key in KeyType]?: boolean;
         };
@@ -620,15 +920,18 @@ export namespace ChocoUi {
             SetProp<TextAlignKeys> &
             SetProp<PosKeys> &
             SetProp<OverflowKeys> &
+            SetProp<OverflowXKeys> &
+            SetProp<OverflowYKeys> &
             SetProp<EventKeys> &
             SetProp<CursorKeys> &
             SetProp<UserSelectKeys> &
             SetProp<BoxSizingKeys>;
 
         //* Display
-        //? none flex block inline inline-flex inline-block grid inline-grid table inline-table
+        //? unset none flex block inline inline-flex inline-block grid inline-grid table inline-table
         export const display = {
-            dNone: { key: null, value: 'unset' },
+            dUnset: { key: null, value: 'unset' },
+            dNone: { key: 'n', value: 'none' },
             dFlex: { key: 'f', value: 'flex' },
             dBlock: { key: 'b', value: 'block' },
             dInline: { key: 'i', value: 'inline' },
@@ -638,6 +941,7 @@ export namespace ChocoUi {
             dInlineG: { key: 'ig', value: 'inline-grid' },
             dTable: { key: 't', value: 'table' },
             dInlineT: { key: 'it', value: 'inline-table' },
+            dContents: { key: 'c', value: 'contents' },
         } as const;
         export type Display = typeof display;
         export type DisplayKeys = keyof Display;
@@ -679,7 +983,7 @@ export namespace ChocoUi {
         export type AlignContentValue = AlignContent[AlignContentKeys]['value'];
 
         //* Align items
-        //? flex-end flex-start center space-around space-between stretch
+        //? flex-end flex-start center space-around space-between stretch baseline
         export const alignItems = {
             aiNone: { key: null, value: 'unset' },
             aiEnd: { key: 'e', value: 'flex-end' },
@@ -688,6 +992,7 @@ export namespace ChocoUi {
             aiAround: { key: 'a', value: 'space-around' },
             aiBetween: { key: 'b', value: 'space-between' },
             aiStretch: { key: 'st', value: 'stretch' },
+            aiBaseline: { key: 'bl', value: 'baseline' },
         } as const;
         export type AlignItems = typeof alignItems;
         export type AlignItemsKeys = keyof AlignItems;
@@ -739,6 +1044,7 @@ export namespace ChocoUi {
             taRight: { key: 'r', value: 'right' },
             taCenter: { key: 'c', value: 'center' },
             taJustify: { key: 'j', value: 'justify' },
+            taInitial: { key: 'i', value: 'initial' },
         } as const;
         export type TextAlign = typeof textAlign;
         export type TextAlignKeys = keyof TextAlign;
@@ -830,6 +1136,13 @@ export namespace ChocoUi {
             curT: { key: 't', value: 'text' },
             curC: { key: 'c', value: 'crosshair' },
             curCr: { key: 'cr', value: 'col-resize' },
+            curEr: { key: 'er', value: 'e-resize' },
+            curEwr: { key: 'ewr', value: 'ew-resize' },
+            curWr: { key: 'wr', value: 'w-resize' },
+            curRr: { key: 'rr', value: 'row-resize' },
+            curSr: { key: 'sr', value: 's-resize' },
+            curNr: { key: 'nr', value: 'n-resize' },
+            curNsr: { key: 'nsr', value: 'ns-resize' },
         } as const;
         export type Cursor = typeof cursor;
         export type CursorKeys = keyof Cursor;

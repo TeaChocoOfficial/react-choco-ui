@@ -3,74 +3,83 @@ import { CColor } from './CColor';
 import { ChocoUi } from '$Type/Choco';
 import { ChocoShade } from './ChocoShade';
 import { useTheme } from '$/theme/useTheme';
-import { ChocoStyle } from '../ChocoStyle';
 
 export class ChocoColor {
     private _theme: ChocoUi.Theme;
     constructor(theme?: ChocoUi.Theme) {
         this._theme = theme ?? useTheme();
     }
+    get colorMap(): ChocoUi.Color.ColorMap {
+        const palette = this._theme.palette;
+        const colorMap = ChocoUi.Color.mains.reduce(
+            (acc, main) => ({
+                ...acc,
+                [main]: palette.main[main],
+                [`${main}Text`]: palette.text[main],
+            }),
+            {} as ChocoUi.Color.ColorMap,
+        );
+        return {
+            ...colorMap,
+            main: palette.main.inverse,
+            text: palette.text.inverse,
+        };
+    }
+    is(value: unknown): value is ChocoUi.Color.ColorsType {
+        if (
+            value instanceof CColor ||
+            (value as ChocoUi.Color.ColorType) in this.colorMap ||
+            (typeof value === 'string' &&
+                (ChocoUi.Color.mains.find((main) =>
+                    ChocoUi.Color.Shade.keys.find(
+                        (key) => value === `${main}-${key}`,
+                    ),
+                ) ||
+                    value.startsWith('#') ||
+                    value.startsWith('common.')))
+        ) {
+            return true;
+        }
+        return false;
+    }
     get(color?: ChocoUi.Color.ColorsType): CColor {
         try {
             const palette = this._theme.palette;
-            if (color === undefined) return new CColor();
-            const colorMap: Record<
-                ChocoUi.Color.ColorType,
-                ChocoUi.Color.Colors
-            > = {
-                main: palette.main.inverse,
-                text: palette.text.inverse,
-
-                //*inherit
-                inverse: palette.main.inverse,
-                inverseText: palette.text.inverse,
-
-                //*primary
-                primary: palette.main.primary,
-                primaryText: palette.text.primary,
-
-                //*secondary
-                secondary: palette.main.secondary,
-                secondaryText: palette.text.secondary,
-
-                //*warning
-                warn: palette.main.warn,
-                warnText: palette.text.warn,
-
-                //*info
-                info: palette.main.info,
-                infoText: palette.text.info,
-
-                //*error
-                error: palette.main.error,
-                errorText: palette.text.error,
-
-                //*success
-                success: palette.main.success,
-                successText: palette.text.success,
-            };
-            if (color === null) return new CColor(null);
-            if (
-                typeof color === 'string' &&
-                (color as ChocoUi.Color.Hex).startsWith('#')
-            )
-                return new CColor(color as ChocoUi.Color.Type);
-            if ((color as ChocoUi.Color.ColorType) in colorMap)
-                return colorMap[color as ChocoUi.Color.ColorType][5];
-            if (typeof color === 'string' && color.startsWith('common.')) {
-                const path = color.split('.').slice(1);
-                let result: any = palette.common;
-                for (const key of path) {
-                    result = result?.[key];
-                    if (!result) return new CColor();
-                }
-                return result instanceof CColor
-                    ? result
-                    : typeof result === 'string' && result.startsWith('#')
-                    ? new CColor(color as ChocoUi.Color.Type)
-                    : result;
-            }
             if (color instanceof CColor) return color;
+            if (color === null) return new CColor(null);
+            if (color === undefined) return new CColor();
+            if ((color as ChocoUi.Color.ColorType) in this.colorMap)
+                return this.colorMap[color as ChocoUi.Color.ColorType][5];
+            if (typeof color === 'string') {
+                if ((color as ChocoUi.Color.Hex).startsWith('#'))
+                    return new CColor(color as ChocoUi.Color.Type);
+                if (
+                    ChocoUi.Color.mains.find((main) =>
+                        ChocoUi.Color.Shade.keys.find((key) =>
+                            [`${main}-${key}`, `${main}Text-${key}`].includes(
+                                color,
+                            ),
+                        ),
+                    )
+                ) {
+                    const colors = color.split('-');
+                    const shade = Number(colors[1]) as ChocoUi.Color.Shade.Key;
+                    if (colors[0].includes('Text'))
+                        return palette.text[
+                            colors[0].slice(0, -4) as ChocoUi.Color.Main
+                        ][shade];
+                    return palette.main[colors[0] as ChocoUi.Color.Main][shade];
+                }
+                if (color.startsWith('common.')) {
+                    const common = color.split('.')[1];
+                    const colors = common.split('-');
+                    const commonKey = colors[0] as ChocoUi.Theme.CommonKeys;
+                    const shade = Number(
+                        colors[1] ?? 5,
+                    ) as ChocoUi.Color.Shade.Key;
+                    return palette.common[commonKey][shade];
+                }
+            }
             const defaultColor = palette.main[color as ChocoUi.Color.Main];
             return defaultColor?.[5] ?? color;
         } catch (error) {
@@ -79,22 +88,26 @@ export class ChocoColor {
         }
     }
     set(
-        color: ChocoUi.Color.ColorType = 'secondary',
+        color: ChocoUi.Color.ColorKeys = 'secondary',
         option?: ChocoUi.Color.Set.Option,
     ): ChocoUi.Color.Set.Get {
         const index = ChocoUi.Color.mains.findIndex((clr) =>
             color.startsWith(clr),
         );
         const clr = ChocoUi.Color.mains[index];
+        const shade = Number(color.split('-')[1] ?? 5);
         const setColors: ChocoUi.Color.Set.Colors = color.startsWith(clr)
-            ? { main: clr, text: `${clr}Text` }
+            ? {
+                  main: `${clr}-${shade}` as ChocoUi.Color.ColorKey,
+                  text: `${clr}Text-${shade}` as ChocoUi.Color.ColorKey,
+              }
             : { main: 'main', text: 'text' };
         return this.getSet(setColors, color, option);
     }
 
     getSet(
         setColors: ChocoUi.Color.Set.Colors,
-        color: ChocoUi.Color.ColorType,
+        color: ChocoUi.Color.ColorKeys,
         option: ChocoUi.Color.Set.Option = {},
     ): ChocoUi.Color.Set.Get {
         const isContrast = color.toLocaleLowerCase().includes('text');
@@ -110,51 +123,49 @@ export class ChocoColor {
         const { text, main } = shadesColor;
         const { text: isText } = option;
 
-        if (isText) {
-            return {
-                shadesColor,
-                colors: {
-                    bgClr: null,
-                    clr: main[5],
-                    bor: main[5],
-                    hover: main[4],
-                    bgActive: null,
-                    active: main[3],
-                    action: main[5],
-                    bgDisabled: null,
-                    borHover: main[4],
-                    borActive: main[3],
-                    focus: main[4].alpha(0.6),
-                    bgHover: main[4].alpha(0.2),
-                    disabled: main[6].alpha(0.7),
-                    borDisabled: main[6].alpha(0.7),
-                    disabledHover: main[4].alpha(0.9),
-                    bgDisabledHover: main[4].alpha(0.2),
-                    borDisabledHover: main[4].alpha(0.9),
-                },
-            };
-        }
+        const colors = isText
+            ? {
+                  bgClr: null,
+                  clr: main[5],
+                  bor: main[5],
+                  hover: main[4],
+                  bgActive: null,
+                  active: main[3],
+                  action: main[5],
+                  bgDisabled: null,
+                  borHover: main[4],
+                  borActive: main[3],
+                  focus: main[4].alpha(0.6),
+                  bgHover: main[4].alpha(0.2),
+                  disabled: main[6].alpha(0.7),
+                  borDisabled: main[6].alpha(0.7),
+                  disabledHover: main[4].alpha(0.9),
+                  bgDisabledHover: main[4].alpha(0.2),
+                  borDisabledHover: main[4].alpha(0.9),
+              }
+            : {
+                  bor: null,
+                  clr: text[5],
+                  hover: text[4],
+                  bgClr: main[5],
+                  borHover: null,
+                  active: text[3],
+                  action: main[5],
+                  borActive: null,
+                  bgHover: main[4],
+                  bgActive: main[3],
+                  borDisabled: null,
+                  borDisabledHover: null,
+                  focus: main[4].alpha(0.6),
+                  disabled: text[6].alpha(0.7),
+                  bgDisabled: main[6].alpha(0.7),
+                  disabledHover: text[4].alpha(0.9),
+                  bgDisabledHover: main[4].alpha(0.6),
+              };
+
         return {
+            colors,
             shadesColor,
-            colors: {
-                bor: null,
-                clr: text[5],
-                hover: text[4],
-                bgClr: main[5],
-                borHover: null,
-                active: text[3],
-                action: main[5],
-                borActive: null,
-                bgHover: main[4],
-                bgActive: main[3],
-                borDisabled: null,
-                borDisabledHover: null,
-                focus: main[4].alpha(0.6),
-                disabled: text[6].alpha(0.7),
-                bgDisabled: main[6].alpha(0.7),
-                disabledHover: text[4].alpha(0.9),
-                bgDisabledHover: main[4].alpha(0.6),
-            },
             //     setColor: {
             //     bor: null,
             //     clr: main[10],//text
@@ -181,15 +192,16 @@ export class ChocoColor {
         text,
         color,
         outline,
+        container,
         isFocus = true,
         isBorder = true,
-        defaultColor = 'secondary',
+        defaultColor = 'primary',
         disabled: isDisabled = false,
     }: ChocoUi.Color.Set.UseGetProp): ChocoUi.Color.Set.Styles {
         let cs: ChocoUi.Style.CSSObject = {};
         const { width } = this._theme.shape.border;
         const { colors, shadesColor } = this.set(color ?? defaultColor, {
-            text: text || outline,
+            text: (text || outline) && !container,
         });
 
         const {
@@ -211,21 +223,21 @@ export class ChocoColor {
             borDisabledHover,
         } = colors;
 
-        if (outline)
+        if (outline && !container)
             cs = {
                 ...cs,
                 clr,
                 bgClr: null,
-                br: isBorder ? { width: -width, color: bor } : null,
+                br: { width, color: isBorder ? bor : null },
                 ':hover': {
                     clr: hover,
                     bgClr: bgHover,
-                    borders: { width: -width, color: borHover },
+                    br: { width, color: borHover },
                 },
                 ':active': {
                     clr: active,
                     bgClr: bgActive,
-                    borders: { width: -width, color: borActive },
+                    br: { width, color: borActive },
                 },
             };
         else
@@ -233,7 +245,7 @@ export class ChocoColor {
                 ...cs,
                 clr,
                 bgClr,
-                borders: null,
+                br: { width, color: null },
                 ':hover': { bgClr: bgHover },
                 ':active': { clr: active, bgClr: bgActive },
             };
@@ -241,23 +253,20 @@ export class ChocoColor {
         const disableds: ChocoUi.Style.CSSObject = {
             clr: disabled,
             bgClr: outline ? null : bgDisabled,
-            borders:
-                outline && isBorder
-                    ? { width: -width, color: borDisabled }
-                    : null,
+            br: { width, color: outline && isBorder ? borDisabled : null },
             ':hover': {
                 clr: disabledHover,
                 bgClr: bgDisabledHover,
-                borders:
-                    outline && isBorder
-                        ? { width: -width, color: borDisabledHover }
-                        : null,
+                br: {
+                    width,
+                    color: outline && isBorder ? borDisabledHover : null,
+                },
             },
         };
         if (isDisabled === true) cs = { ...cs, event: 'n', ...disableds };
         const focusStyles: ChocoUi.Style.CSSObject = {
             ':focus': {
-                outlin: { width: -width, color: focus },
+                outlin: { width, color: focus },
             },
         };
         if (isFocus) cs = { ...cs, ...focusStyles };

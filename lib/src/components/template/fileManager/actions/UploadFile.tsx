@@ -1,5 +1,5 @@
 //-Path: "react-choco-ui/lib/src/components/template/fileManager/actions/UploadFile.tsx"
-import './UploadFile.scss';
+// import './UploadFile.scss';
 import UploadItem from './UploadItem';
 import { Loader } from '../components/Loader';
 import { CIcon } from '$Compo/template/CIcon';
@@ -9,6 +9,11 @@ import { FileManager } from '$Hook/fileManager/fileManager';
 import { useFileNavigation } from '$Hook/fileManager/context/FileNavigation';
 import { useTranslation } from '$Hook/fileManager/context/TranslationProvider';
 import { useRef, useState, ChangeEvent, DragEvent, KeyboardEvent } from 'react';
+import { CBox } from '$Compo/ui/CBox';
+import { CText } from '$Compo/ui/CText';
+import { CLabel } from '$Compo/ui/CLabel';
+import { CUploadFile } from '$Compo/template/CUploadFile';
+import { CList } from '$Compo/template/CList';
 
 interface UploadFileActionProps {
     fileUploadConfig?: FileManager.UploadConfig;
@@ -123,13 +128,31 @@ export const UploadFileAction: React.FC<UploadFileActionProps> = ({
     };
 
     return (
-        <div
+        <CBox
+            dFlex
+            g={5}
+            px={4}
+            py={5}
             className={`fm-upload-file ${
                 files.length > 0 ? 'file-selcted' : ''
             }`}
         >
-            <div className="select-files">
-                <div
+            <CBox dFlex g={2} column fullW className="select-files">
+                <CBox
+                    dFlex
+                    mt={5}
+                    h={220}
+                    borR={2}
+                    aiCenter
+                    jcCenter
+                    bgClr="primary-9"
+                    br={{ width: 0.5, style: 'dashed', color: 'primary' }}
+                    cs={{
+                        ':hover': {
+                            borClr: 'info',
+                            bgClr: 'info-9',
+                        },
+                    }}
                     className={`draggable-file-input ${
                         isDragging ? 'dragging' : ''
                     }`}
@@ -138,44 +161,48 @@ export const UploadFileAction: React.FC<UploadFileActionProps> = ({
                     onDragEnter={() => setIsDragging(true)}
                     onDragLeave={() => setIsDragging(false)}
                 >
-                    <div className="input-text">
-                        <CIcon icon="AiOutlineCloudUpload" size={30} />
-                        <span>{t('dragFileToUpload')}</span>
-                    </div>
-                </div>
-                <div className="btn-choose-file">
-                    <Button p={0} onKeyDown={handleChooseFileKeyDown}>
-                        <label htmlFor="chooseFile">{t('chooseFile')}</label>
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            id="chooseFile"
-                            className="choose-file-input"
-                            onChange={handleChooseFile}
-                            multiple
-                            accept={acceptedFileTypes?.join(',')}
-                        />
-                    </Button>
-                </div>
-            </div>
+                    <CBox dFlex column eventN aiCenter className="input-text">
+                        <CIcon icon="AiOutlineCloudUpload" fontS={64} />
+                        <CText tag="span">{t('dragFileToUpload')}</CText>
+                    </CBox>
+                </CBox>
+                <CBox dFlex jcCenter className="btn-choose-file">
+                    <CUploadFile
+                        ref={fileInputRef}
+                        fullW
+                        id="chooseFile"
+                        onChange={handleChooseFile}
+                        className="choose-file-input"
+                        accept={acceptedFileTypes?.join(',')}
+                        buttonProps={{ onKeyDown: handleChooseFileKeyDown }}
+                    >
+                        {t('chooseFile')}
+                    </CUploadFile>
+                </CBox>
+            </CBox>
             {files.length > 0 && (
-                <div className="files-progress">
-                    <div className="heading">
+                <CBox w="calc(60% - 18px)" className="files-progress">
+                    <CBox dFlex g={1} className="heading">
                         {Object.values(isUploading).some(
                             (fileUploading) => fileUploading,
                         ) ? (
                             <>
-                                <h2>{t('uploading')}</h2>
+                                <CText tag="h2" fontS={14} m={0}>
+                                    {t('uploading')}
+                                </CText>
                                 <Loader
-                                    loading={true}
+                                    upload
+                                    loading
                                     className="upload-loading"
                                 />
                             </>
                         ) : (
-                            <h2>{t('completed')}</h2>
+                            <CText tag="h2" fontS={14} m={0}>
+                                {t('completed')}
+                            </CText>
                         )}
-                    </div>
-                    <ul>
+                    </CBox>
+                    <CList pr={1} pb={2} mt={0.75} h={220} ofyA fontW={500}>
                         {files.map((fileData, index) => (
                             <UploadItem
                                 index={index}
@@ -188,9 +215,9 @@ export const UploadFileAction: React.FC<UploadFileActionProps> = ({
                                 handleFileRemove={handleFileRemove}
                             />
                         ))}
-                    </ul>
-                </div>
+                    </CList>
+                </CBox>
             )}
-        </div>
+        </CBox>
     );
 };

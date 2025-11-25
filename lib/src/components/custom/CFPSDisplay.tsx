@@ -1,11 +1,15 @@
-//-Path: "react-choco-ui/lib/src/components/custom/FPSDisplay.tsx"
+//-Path: "react-choco-ui/lib/src/components/custom/CFPSDisplay.tsx"
+import { CBox } from '$Compo/ui/CBox';
 import { ChocoUi } from '$Type/Choco';
+import { CText } from '$Compo/ui/CText';
+import { CButton } from '$Compo/ui/CButton';
 import { customUi } from '$/custom/customUi';
 import { useState, useEffect, useRef } from 'react';
 
 export type FPSDisplayType = ChocoUi.Ui<
     'div',
     {
+        color?: ChocoUi.Color.ColorKeys;
         graph?: boolean;
         memory?: boolean;
         visible?: boolean;
@@ -33,6 +37,7 @@ export const CFPSDisplay = customUi<FPSDisplayType>(
 )(
     ({
         props: {
+            color = "primary",
             graph,
             memory,
             visible,
@@ -120,18 +125,19 @@ export const CFPSDisplay = customUi<FPSDisplayType>(
             };
         }, [maxFPS, maxHistory, memory]);
 
-        const getPositionClass = () => {
+        const getPositionClass = (): ChocoUi.Cs => {
+            const cs = { pos: 'f' } as const;
             switch (position) {
                 case 'top-left':
-                    return 'fixed top-4 left-4';
+                    return { ...cs, t: 4, l: 4 };
                 case 'top-right':
-                    return 'fixed top-4 right-4';
+                    return { ...cs, t: 4, r: 4 };
                 case 'bottom-left':
-                    return 'fixed bottom-4 left-4';
+                    return { ...cs, b: 4, l: 4 };
                 case 'bottom-right':
-                    return 'fixed bottom-4 right-4';
+                    return { ...cs, b: 4, r: 4 };
                 default:
-                    return 'fixed top-4 right-4';
+                    return { ...cs, t: 4, r: 4 };
             }
         };
 
@@ -159,20 +165,19 @@ export const CFPSDisplay = customUi<FPSDisplayType>(
         const getPerformanceStatus = (fpsValue: number = fps) => {
             if (isMinimalMode) {
                 if (fpsValue >= 50)
-                    return { text: 'Excellent', color: 'bg-green-600' };
-                if (fpsValue >= 30)
-                    return { text: 'Good', color: 'bg-yellow-600' };
-                return { text: 'Poor', color: 'bg-red-600' };
+                    return { text: 'Excellent', color: 'success-5' };
+                if (fpsValue >= 30) return { text: 'Good', color: 'warning-5' };
+                return { text: 'Poor', color: 'error-5' };
             }
 
             const targetFPS = Math.max(60, maxFPS);
             if (fpsValue >= targetFPS * 0.9)
-                return { text: 'Excellent', color: 'bg-green-600' };
+                return { text: 'Excellent', color: 'success-5' };
             if (fpsValue >= targetFPS * 0.6)
-                return { text: 'Good', color: 'bg-yellow-600' };
+                return { text: 'Good', color: 'warning-5' };
             if (fpsValue >= targetFPS * 0.3)
-                return { text: 'Fair', color: 'bg-orange-600' };
-            return { text: 'Poor', color: 'bg-red-600' };
+                return { text: 'Fair', color: 'orange-5' };
+            return { text: 'Poor', color: 'error-5' };
         };
 
         const toggleVisibility = () => setIsVisible(!isVisible);
@@ -206,181 +211,223 @@ export const CFPSDisplay = customUi<FPSDisplayType>(
         // ถ้าไม่แสดงและมี hideBtn ให้แสดงปุ่ม Show
         if (!isVisible && hideBtn) {
             return (
-                <button
+                <CButton
+                    color="info"
+                    cs={getPositionClass()}
                     onClick={toggleVisibility}
-                    className={`${getPositionClass()} bg-gray-800 text-white px-3 py-2 rounded-lg text-sm z-50 hover:bg-gray-700 transition-colors`}
                 >
                     Show FPS
-                </button>
+                </CButton>
             );
         }
 
         // Minimal Mode - แสดงแค่ FPS อย่างเดียว
         if (isMinimalMode) {
             return (
-                <div
-                    className={`${getPositionClass()} bg-black bg-opacity-80 text-white px-3 py-2 rounded-lg font-mono text-sm z-50`}
+                <CBox
+                    g={2}
+                    z={50}
+                    px={3}
+                    py={2}
+                    dFlex
+                    aiCenter
+                    fontS={8}
+                    clr="white"
+                    bgClr="#0009"
+                    fontF="monospace"
+                    cs={{ ...getPositionClass() }}
                 >
-                    <div className="flex items-center gap-2">
-                        <span>FPS:</span>
-                        <span
-                            className="font-bold"
-                            style={{ color: getFPSColor() }}
-                        >
+                    <CBox dFlex aiCenter g={2}>
+                        <CText tag="span">FPS:</CText>
+                        <CText tag="span" fontW="bold" clr={getFPSColor()}>
                             {fps}
-                        </span>
-                    </div>
-                </div>
+                        </CText>
+                    </CBox>
+                </CBox>
             );
         }
 
         // Full Mode - แสดง UI เต็มรูปแบบ
         return (
-            <div
+            <CBox
                 ref={ref}
-                className={`${getPositionClass()} bg-gray-900 bg-opacity-90 text-white p-4 rounded-lg font-mono text-sm z-50 min-w-[220px]`}
+                cs={{
+                    ...getPositionClass(),
+                    p: 4,
+                    z: 50,
+                    borR: 2,
+                    bgOp: 90,
+                    minW: 220,
+                    fontS: 3,
+                    clr: 'white',
+                    bgClr: color,
+                    fontF: 'monospace',
+                }}
             >
                 {/* Header with Toggle */}
                 {hideBtn && (
-                    <div className="flex justify-between items-center mb-3">
-                        <span className="font-semibold">
+                    <CBox dFlex jcBetween aiCenter mb={3}>
+                        <CText tag="span" fontW="semibold">
                             Performance Monitor
-                        </span>
-                        <button
-                            onClick={toggleVisibility}
-                            className="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded transition-colors"
-                        >
+                        </CText>
+                        <CButton onClick={toggleVisibility} color="info">
                             Hide
-                        </button>
-                    </div>
+                        </CButton>
+                    </CBox>
                 )}
 
-                <div className="space-y-3">
+                <CBox g={3}>
                     {/* Current FPS */}
-                    <div className="flex justify-between items-center">
-                        <span>Current FPS:</span>
-                        <span
-                            className="font-bold text-lg"
-                            style={{ color: getFPSColor() }}
+                    <CBox dFlex jcBetween aiCenter>
+                        <CText tag="span">Current FPS:</CText>
+                        <CText
+                            tag="span"
+                            fontW="bold"
+                            fontS={5}
+                            clr={getFPSColor()}
                         >
                             {fps}
-                        </span>
-                    </div>
+                        </CText>
+                    </CBox>
 
                     {/* Memory Usage - แสดงเมื่อ memory = true */}
                     {memory && memoryInfo && (
-                        <div className="space-y-2 border-t border-gray-700 pt-3">
-                            <div className="flex justify-between items-center">
-                                <span>Memory:</span>
-                                <span
-                                    className="font-bold"
-                                    style={{
-                                        color: getMemoryColor(memoryPercentage),
-                                    }}
+                        <CBox g={2} brT="1px solid gray-7" pt={3}>
+                            <CBox dFlex jcBetween aiCenter>
+                                <CText tag="span">Memory:</CText>
+                                <CText
+                                    tag="span"
+                                    fontW="bold"
+                                    clr={getMemoryColor(memoryPercentage)}
                                 >
                                     {formatMemory(memoryInfo.used)}
-                                </span>
-                            </div>
+                                </CText>
+                            </CBox>
 
                             {/* Memory Bar */}
-                            <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
-                                <div
-                                    className="h-full transition-all duration-300 rounded-full"
-                                    style={{
-                                        width: `${memoryPercentage}%`,
-                                        backgroundColor:
-                                            getMemoryColor(memoryPercentage),
-                                    }}
+                            <CBox fullW bgClr="gray-8" borR="full" h={2} ofH>
+                                <CBox
+                                    fullH
+                                    borR="full"
+                                    w={`${memoryPercentage}%`}
+                                    bgClr={getMemoryColor(memoryPercentage)}
                                 />
-                            </div>
+                            </CBox>
 
                             {advanced && (
                                 <>
-                                    <div className="flex justify-between text-xs text-gray-400">
-                                        <span>
+                                    <CBox
+                                        dFlex
+                                        jcBetween
+                                        fontS={3}
+                                        clr="gray-4"
+                                    >
+                                        <CText tag="span">
                                             Total:{' '}
                                             {formatMemory(memoryInfo.total)}
-                                        </span>
-                                        <span>{memoryPercentage}%</span>
-                                    </div>
-                                    <div className="text-xs text-gray-400">
+                                        </CText>
+                                        <CText tag="span">
+                                            {memoryPercentage}%
+                                        </CText>
+                                    </CBox>
+                                    <CText tag="span" fontS={3} clr="gray-4">
                                         Limit: {formatMemory(memoryInfo.limit)}
-                                    </div>
+                                    </CText>
                                 </>
                             )}
-                        </div>
+                        </CBox>
                     )}
 
                     {/* Memory Warning - ถ้าไม่รองรับ */}
                     {memory && !memoryInfo && (
-                        <div className="text-xs text-gray-400 border-t border-gray-700 pt-2">
+                        <CText
+                            tag="span"
+                            fontS="xs"
+                            clr="gray-4"
+                            brT="1px solid gray-7"
+                            pt={2}
+                        >
                             Memory API not supported in this browser
-                        </div>
+                        </CText>
                     )}
 
                     {/* Advanced Stats */}
                     {advanced && (
-                        <>
-                            <div className="flex justify-between items-center">
-                                <span>Average:</span>
-                                <span
-                                    style={{ color: getFPSColor(averageFPS) }}
-                                >
+                        <CBox g={2}>
+                            <CBox dFlex jcBetween aiCenter>
+                                <CText tag="span">Average:</CText>
+                                <CText tag="span" clr={getFPSColor(averageFPS)}>
                                     {averageFPS}
-                                </span>
-                            </div>
+                                </CText>
+                            </CBox>
 
-                            <div className="flex justify-between items-center">
-                                <span>Min/Max:</span>
-                                <span className="text-xs">
-                                    <span
-                                        style={{ color: getFPSColor(minFPS) }}
-                                    >
+                            <CBox dFlex jcBetween aiCenter>
+                                <CText tag="span">Min/Max:</CText>
+                                <CBox dFlex g={1} fontS="xs">
+                                    <CText tag="span" clr={getFPSColor(minFPS)}>
                                         {minFPS}
-                                    </span>
-                                    {' / '}
-                                    <span
-                                        style={{
-                                            color: getFPSColor(
-                                                historicalMaxFPS,
-                                            ),
-                                        }}
+                                    </CText>
+                                    <CText tag="span">/</CText>
+                                    <CText
+                                        tag="span"
+                                        clr={getFPSColor(historicalMaxFPS)}
                                     >
                                         {historicalMaxFPS}
-                                    </span>
-                                </span>
-                            </div>
+                                    </CText>
+                                </CBox>
+                            </CBox>
 
-                            <div className="flex justify-between items-center text-xs text-gray-400">
-                                <span>Monitor:</span>
-                                <span>~{maxFPS}Hz</span>
-                            </div>
-                        </>
+                            <CBox
+                                dFlex
+                                jcBetween
+                                aiCenter
+                                fontS="xs"
+                                clr="gray-4"
+                            >
+                                <CText tag="span">Monitor:</CText>
+                                <CText tag="span">~{maxFPS}Hz</CText>
+                            </CBox>
+                        </CBox>
                     )}
 
                     {/* Graph Section */}
                     {graph && fpsHistory.length > 0 && (
-                        <div className="mt-3">
-                            <div className="flex justify-between text-xs text-gray-400 mb-1">
-                                <span>FPS History:</span>
-                                {advanced && <span>Max: {maxFPS}</span>}
-                            </div>
-                            <div className="flex items-end h-12 gap-px bg-gray-800 rounded p-1">
+                        <CBox mt={3}>
+                            <CBox
+                                dFlex
+                                jcBetween
+                                fontS="xs"
+                                clr="gray-4"
+                                mb={1}
+                            >
+                                <CText tag="span">FPS History:</CText>
+                                {advanced && (
+                                    <CText tag="span">Max: {maxFPS}</CText>
+                                )}
+                            </CBox>
+                            <CBox
+                                dFlex
+                                aiEnd
+                                p={1}
+                                h={64}
+                                g="1px"
+                                borR={2}
+                                bgClr="gray-8"
+                            >
                                 {fpsHistory.slice(-30).map((data, index) => (
-                                    <div
+                                    <CBox
                                         key={index}
-                                        className="flex-1 rounded-t transition-all duration-300 hover:opacity-80"
-                                        style={{
-                                            height: `${
-                                                (data.fps /
-                                                    Math.max(maxFPS, 60)) *
-                                                100
-                                            }%`,
-                                            backgroundColor: getFPSColor(
-                                                data.fps,
-                                            ),
-                                            minHeight: '2px',
-                                        }}
+                                        flx={1}
+                                        minH={2}
+                                        borRTL={2}
+                                        borRTR={2}
+                                        delay={300}
+                                        bgClr={getFPSColor(data.fps)}
+                                        h={`${
+                                            (data.fps / Math.max(maxFPS, 60)) *
+                                            100
+                                        }%`}
+                                        cs={{ ':hover': { op: 0.8 } }}
                                         title={`FPS: ${
                                             data.fps
                                         } | Time: ${new Date(
@@ -388,27 +435,32 @@ export const CFPSDisplay = customUi<FPSDisplayType>(
                                         ).toLocaleTimeString()}`}
                                     />
                                 ))}
-                            </div>
-                        </div>
+                            </CBox>
+                        </CBox>
                     )}
 
                     {/* Performance Status */}
-                    <div className="mt-2 text-xs">
-                        <div
-                            className={`inline-block px-2 py-1 rounded ${performanceStatus.color}`}
+                    <CBox mt={2} fontS="xs">
+                        <CText
+                            tag="span"
+                            bgClr={performanceStatus.color}
+                            px={2}
+                            py={1}
+                            borR="md"
+                            clr="white"
                         >
                             {performanceStatus.text}
-                        </div>
+                        </CText>
                         {advanced && (
-                            <span className="ml-2 text-gray-400">
+                            <CText tag="span" ml={2} clr="gray-4">
                                 (
                                 {Math.round((fps / Math.max(maxFPS, 60)) * 100)}
                                 % of target)
-                            </span>
+                            </CText>
                         )}
-                    </div>
-                </div>
-            </div>
+                    </CBox>
+                </CBox>
+            </CBox>
         );
     },
 )();

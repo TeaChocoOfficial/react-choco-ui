@@ -4,4 +4,4 @@ import { customUi } from '$/custom/customUi';
 
 export type CAlertType = ChocoUi.Ui<'div'>;
 
-export const CAlert = customUi<CAlertType>('div', 'CAlert')()();
+export const CAlert = customUi<CAlertType>('div', 'CAlert')()({});

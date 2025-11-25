@@ -8,7 +8,7 @@ export type ColumnResize = {
     handleMouseUp: React.MouseEventHandler;
     handleMouseDown: React.MouseEventHandler;
     handleMouseMove: React.MouseEventHandler;
-    containerRef: React.RefObject<HTMLElement | null>;
+    containerRef: React.RefObject<HTMLDivElement | null>;
     setColSizes: SetState<{ col1: number; col2: number }>;
 };
 
@@ -16,7 +16,7 @@ export const useColumnResize = (
     col1Size: number,
     col2Size: number,
 ): ColumnResize => {
-    const containerRef = useRef<HTMLElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const [colSizes, setColSizes] = useState({
         col1: col1Size,
         col2: col2Size,

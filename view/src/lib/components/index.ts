@@ -11,6 +11,7 @@ import { CFileManager } from './template/fileManager/CFileManager';
 import { CFilesHeader } from './template/fileManager/CFilesHeader';
 import { CDialog } from './template/CDialog';
 import { CIcon } from './template/CIcon';
+import { CList } from './template/CList';
 import { CSplit } from './template/CSplit';
 
 import { CAlert } from './test/CAlert';
@@ -20,8 +21,8 @@ import { CBreadcrumbs } from './test/CBreadcrumbs';
 import { CChip } from './test/CChip';
 import { CContainer } from './test/CContainer';
 import { CDrawer } from './test/CDrawer';
-import { CIconButton } from './test/CIconButton';
-import { CImage } from './test/CImage';
+import { CIconButton } from './ui/CIconButton';
+import { CImage } from './template/media/CImage';
 import { CInput } from './test/CInput';
 import { CMenu } from './test/CMenu';
 import { CNavbar } from './test/CNavbar';
@@ -41,6 +42,7 @@ import { CTooltip } from './test/CTooltip';
 import { CBox } from './ui/CBox';
 import { CButton } from './ui/CButton';
 import { CCheckbox } from './ui/CCheckbox';
+import { CLabel } from './ui/CLabel';
 import { CPaper } from './ui/CPaper';
 import { CProgress } from './ui/CProgress';
 import { CText } from './ui/CText';
@@ -64,6 +66,7 @@ const C = {
     // Template
     Dialog: CDialog,
     Icon: CIcon,
+    List: CList,
     Split: CSplit,
 
     // Test Components
@@ -96,6 +99,7 @@ const C = {
     Box: CBox,
     Button: CButton,
     Checkbox: CCheckbox,
+    Label: CLabel,
     Paper: CPaper,
     Progress: CProgress,
     Text: CText,

@@ -1,6 +1,9 @@
 //-Path: "react-choco-ui/lib/src/hooks/array.ts"
 
 export namespace ARY {
+    export type Length<Value, Length extends number> = Array<Value> & {
+        length: Length;
+    };
     export type ElementType<T> = T extends (infer U)[]
         ? U
         : T extends ReadonlyArray<infer U>

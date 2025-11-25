@@ -4,10 +4,10 @@ import { ChocoStyle } from '$/custom/ChocoStyle';
 import { Global, Interpolation, Theme } from '@emotion/react';
 
 export type CGlobalProps = {
-    styles: ChocoUi.Style.CS;
+    cs: ChocoUi.Style.CS;
 };
 
-export const CGlobal: React.FC<CGlobalProps> = ({ styles }) => {
-    const chocoStyle = new ChocoStyle(styles);
+export const CGlobal: React.FC<CGlobalProps> = ({ cs }) => {
+    const chocoStyle = new ChocoStyle(cs);
     return <Global styles={chocoStyle.cs as Interpolation<Theme>} />;
 };

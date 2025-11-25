@@ -2,117 +2,218 @@
 import { ChocoUi } from '$Type/Choco';
 import { ChocoShade } from '$/custom/color/ChocoShade';
 
-export const defaultTheme: ChocoUi.Theme = {
-    responsive: {
-        keys: ['m', 't', 'l', 'd'],
-        fixed: 2,
-        spacing: 4,
-        percent: {
-            m: 40,
-            t: 60,
-            l: 80,
-            d: 100,
-        },
-        breakpoints: {
-            m: 40,
-            t: 60,
-            l: 80,
-            d: 100,
-        },
-    },
-    palette: {
-        common: {},
-        main: {
-            // Primary - สีหลักของแบรนด์ (น้ำเงิน)
-            primary: new ChocoShade('hsl(221, 83%, 53%)'), // #2563eb
+const defThemeMode: ChocoUi.Theme.Mode = 'dark';
 
-            // Secondary - สีรอง (เทา)
-            secondary: new ChocoShade('hsl(215, 14%, 34%)'), // #4b5563
+export function themeMode(mode?: ChocoUi.Theme.Mode): ChocoUi.Theme.Mode {
+    if (typeof window !== 'undefined' && localStorage) {
+        if (mode) localStorage.setItem?.('theme mode', mode);
+        let themeMode = localStorage.getItem?.('theme mode');
+        if (themeMode === null) {
+            const { matches } =
+                window.matchMedia?.('(prefers-color-scheme: dark)') ?? {};
+            themeMode = matches ? 'dark' : 'light';
+            localStorage.setItem('theme mode', themeMode);
+        }
+        return themeMode as ChocoUi.Theme.Mode;
+    }
+    return defThemeMode;
+}
+export const defaultTheme: ChocoUi.Theme.Def = {
+    mode: themeMode(),
+    dark: {
+        palette: {
+            common: {
+                body: new ChocoShade('hsl(222, 14%, 10%)'), // พื้นหลังหลัก dark
+                surface: new ChocoShade('hsl(222, 14%, 15%)'), // พื้นผิว
+            },
+            main: {
+                paper: new ChocoShade('hsl(222, 14%, 18%)'),
 
-            // Info - สีข้อมูล (ฟ้า)
-            info: new ChocoShade('hsl(199, 89%, 48%)'), // #0ea5e9
+                // Primary - สีหลักของแบรนด์ (น้ำเงินเข้ม)
+                primary: new ChocoShade('hsl(0, 0%, 25%)'),
 
-            // Success - สีสำเร็จ (เขียว)
-            success: new ChocoShade('hsl(142, 76%, 36%)'), // #16a34a
+                // Inverse - สีสำหรับพื้นหลังเข้ม (เทาอ่อน)
+                inverse: new ChocoShade('hsl(222, 14%, 95%)'),
+            },
+            text: {
+                paper: new ChocoShade('hsl(222, 14%, 80%)'),
 
-            // Warn - สีคำเตือน (ส้ม)
-            warn: new ChocoShade('hsl(25, 95%, 53%)'), // #ea580c
+                // Primary - ข้อความหลัก (เทาอ่อน)
+                primary: new ChocoShade('hsl(222, 14%, 95%)'),
 
-            // Error - สีข้อผิดพลาด (แดง)
-            error: new ChocoShade('hsl(0, 84%, 60%)'), // #dc2626
-
-            // Inverse - สีสำหรับพื้นหลังเข้ม (ขาว)
-            inverse: new ChocoShade('hsl(0, 0%, 100%)'), // #ffffff
-        },
-        text: {
-            // Primary - ข้อความหลัก (เข้มมาก)
-            primary: new ChocoShade('hsl(222, 47%, 11%)'), // #0f172a
-
-            // Secondary - ข้อความรอง (เข้มปานกลาง)
-            secondary: new ChocoShade('hsl(215, 16%, 47%)'), // #64748b
-
-            // Info - ข้อความข้อมูล
-            info: new ChocoShade('hsl(201, 96%, 32%)'), // #075985
-
-            // Success - ข้อความสำเร็จ
-            success: new ChocoShade('hsl(142, 65%, 24%)'), // #166534
-
-            // Warn - ข้อความคำเตือน
-            warn: new ChocoShade('hsl(21, 90%, 37%)'), // #9a3412
-
-            // Error - ข้อความผิดพลาด
-            error: new ChocoShade('hsl(0, 74%, 42%)'), // #b91c1c
-
-            // Inverse - ข้อความบนพื้นสีเข้ม
-            inverse: new ChocoShade('hsl(0, 0%, 100%)'), // #ffffff
+                // Inverse - ข้อความบนพื้นสีเข้ม (เทาเข้ม)
+                inverse: new ChocoShade('hsl(222, 14%, 15%)'),
+            },
         },
     },
-    typography: {
-        fontFamily: 'Arial, sans-serif',
-        fontSize: {
-            small: '0.875rem',
-            medium: '1rem',
-            large: '1.25rem',
+    light: {
+        palette: {
+            common: {
+                body: new ChocoShade('hsl(0, 0%, 98%)'), // พื้นหลังหลัก light
+                surface: new ChocoShade('hsl(0, 0%, 100%)'), // พื้นผิว
+            },
+            main: {
+                paper: new ChocoShade('hsl(0, 0%, 100%)'),
+
+                // Primary - สีหลักของแบรนด์ (น้ำเงิน)
+                primary: new ChocoShade('hsl(0, 0%, 85%)'),
+
+                // Inverse - สีสำหรับพื้นหลังอ่อน (เทาเข้ม)
+                inverse: new ChocoShade('hsl(222, 14%, 20%)'),
+            },
+            text: {
+                paper: new ChocoShade('hsl(222, 14%, 20%)'),
+
+                // Primary - ข้อความหลัก (เทาเข้ม)
+                primary: new ChocoShade('hsl(0, 0%, 5%)'),
+
+                // Inverse - ข้อความบนพื้นสีอ่อน (เทาอ่อน)
+                inverse: new ChocoShade('hsl(222, 14%, 95%)'),
+            },
         },
     },
-    shape: {
-        border: { radius: 2, width: 1 },
-    },
-    shadows: [
-        'none',
-        '0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12)',
-        '0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12)',
-        '0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12)',
-        '0px 2px 4px -1px rgba(0,0,0,0.2),0px 4px 5px 0px rgba(0,0,0,0.14),0px 1px 10px 0px rgba(0,0,0,0.12)',
-        '0px 3px 5px -1px rgba(0,0,0,0.2),0px 5px 8px 0px rgba(0,0,0,0.14),0px 1px 14px 0px rgba(0,0,0,0.12)',
-        '0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12)',
-        '0px 4px 5px -2px rgba(0,0,0,0.2),0px 7px 10px 1px rgba(0,0,0,0.14),0px 2px 16px 1px rgba(0,0,0,0.12)',
-        '0px 5px 5px -3px rgba(0,0,0,0.2),0px 8px 10px 1px rgba(0,0,0,0.14),0px 3px 14px 2px rgba(0,0,0,0.12)',
-        '0px 5px 6px -3px rgba(0,0,0,0.2),0px 9px 12px 1px rgba(0,0,0,0.14),0px 3px 16px 2px rgba(0,0,0,0.12)',
-        '0px 6px 6px -3px rgba(0,0,0,0.2),0px 10px 14px 1px rgba(0,0,0,0.14),0px 4px 18px 3px rgba(0,0,0,0.12)',
-        '0px 6px 7px -4px rgba(0,0,0,0.2),0px 11px 15px 1px rgba(0,0,0,0.14),0px 4px 20px 3px rgba(0,0,0,0.12)',
-        '0px 7px 8px -4px rgba(0,0,0,0.2),0px 12px 17px 2px rgba(0,0,0,0.14),0px 5px 22px 4px rgba(0,0,0,0.12)',
-        '0px 7px 8px -4px rgba(0,0,0,0.2),0px 13px 19px 2px rgba(0,0,0,0.14),0px 5px 24px 4px rgba(0,0,0,0.12)',
-        '0px 7px 9px -4px rgba(0,0,0,0.2),0px 14px 21px 2px rgba(0,0,0,0.14),0px 5px 26px 4px rgba(0,0,0,0.12)',
-        '0px 8px 9px -5px rgba(0,0,0,0.2),0px 15px 22px 2px rgba(0,0,0,0.14),0px 6px 28px 5px rgba(0,0,0,0.12)',
-        '0px 8px 10px -5px rgba(0,0,0,0.2),0px 16px 24px 2px rgba(0,0,0,0.14),0px 6px 30px 5px rgba(0,0,0,0.12)',
-        '0px 8px 11px -5px rgba(0,0,0,0.2),0px 17px 26px 2px rgba(0,0,0,0.14),0px 6px 32px 5px rgba(0,0,0,0.12)',
-        '0px 9px 11px -5px rgba(0,0,0,0.2),0px 18px 28px 2px rgba(0,0,0,0.14),0px 7px 34px 6px rgba(0,0,0,0.12)',
-        '0px 9px 12px -6px rgba(0,0,0,0.2),0px 19px 29px 2px rgba(0,0,0,0.14),0px 7px 36px 6px rgba(0,0,0,0.12)',
-        '0px 10px 13px -6px rgba(0,0,0,0.2),0px 20px 31px 3px rgba(0,0,0,0.14),0px 8px 38px 7px rgba(0,0,0,0.12)',
-        '0px 10px 13px -6px rgba(0,0,0,0.2),0px 21px 33px 3px rgba(0,0,0,0.14),0px 8px 40px 7px rgba(0,0,0,0.12)',
-        '0px 10px 14px -6px rgba(0,0,0,0.2),0px 22px 35px 3px rgba(0,0,0,0.14),0px 8px 42px 7px rgba(0,0,0,0.12)',
-        '0px 11px 14px -7px rgba(0,0,0,0.2),0px 23px 36px 3px rgba(0,0,0,0.14),0px 9px 44px 8px rgba(0,0,0,0.12)',
-        '0px 11px 15px -7px rgba(0,0,0,0.2),0px 24px 38px 3px rgba(0,0,0,0.14),0px 9px 46px 8px rgba(0,0,0,0.12)',
-    ],
-    zIndex: {
-        mobileStepper: 1000,
-        fab: 1050,
-        speedDial: 1050,
-        appBar: 1100,
-        drawer: 1200,
-        modal: 1300,
-        snackbar: 1400,
-        tooltip: 1500,
+    def: {
+        responsive: {
+            keys: ['m', 't', 'l', 'd'],
+            fixed: 4,
+            spacing: 4,
+            percent: {
+                m: 40,
+                t: 60,
+                l: 80,
+                d: 100,
+            },
+            breakpoints: {
+                m: 40,
+                t: 60,
+                l: 80,
+                d: 100,
+            },
+        },
+        palette: {
+            common: {
+                overlay: new ChocoShade('hsla(0, 0%, 20%, 0.5)'), // overlay
+
+                gray: new ChocoShade('hsl(0, 0%, 60%)'),
+
+                // Blue scale - สำหรับ primary และ info
+                blue: new ChocoShade('hsl(217, 91%, 60%)'),
+
+                // Green scale - สำหรับ success
+                green: new ChocoShade('hsl(142, 71%, 45%)'),
+
+                // Red scale - สำหรับ error
+                red: new ChocoShade('hsl(0, 84%, 60%)'),
+
+                // Orange scale - สำหรับ warning
+                orange: new ChocoShade('hsl(25, 95%, 53%)'),
+            },
+            main: {
+                // Secondary - สีรอง (ฟ้าอมเขียว)
+                secondary: new ChocoShade('hsl(20, 60%, 30%)'),
+
+                // Info - สีข้อมูล (ฟ้า)
+                info: new ChocoShade('hsl(199, 89%, 48%)'), // #0ea5e9
+
+                // Success - สีสำเร็จ (เขียว)
+                success: new ChocoShade('hsl(142, 76%, 36%)'), // #16a34a
+
+                // Warn - สีคำเตือน (ส้ม)
+                warn: new ChocoShade('hsl(40, 95%, 53%)'), // #ea580c
+
+                // Error - สีข้อผิดพลาด (แดง)
+                error: new ChocoShade('hsl(0, 84%, 60%)'), // #dc2626
+            },
+            text: {
+                // Secondary - สีรอง (ฟ้าอมเขียว)
+                secondary: new ChocoShade('hsl(0, 0%, 90%)'),
+
+                // Info - ข้อความข้อมูล
+                info: new ChocoShade('hsl(199, 89%, 25%)'), // #0284c7
+
+                // Success - ข้อความสำเร็จ
+                success: new ChocoShade('hsl(142, 65%, 24%)'), // #166534
+
+                // Warn - ข้อความคำเตือน
+                warn: new ChocoShade('hsl(40, 95%, 30%)'), // #c2410c
+
+                // Error - ข้อความผิดพลาด
+                error: new ChocoShade('hsl(0, 74%, 32%)'), // #b91c1c
+            },
+        },
+        // สีเพิ่มเติมสำหรับการใช้งานทั่วไป
+        font: {
+            unit: 'em',
+            divide: 16,
+            family: [
+                'Inter',
+                'system-ui',
+                '-apple-system',
+                'BlinkMacSystemFont',
+                '"Segoe UI"',
+                'Roboto',
+                '"Helvetica Neue"',
+                'Arial',
+                'sans-serif',
+                '"Apple Color Emoji"',
+                '"Segoe UI Emoji"',
+                '"Segoe UI Symbol"',
+            ].join(','),
+            size: {
+                xs: 12, // 0.75rem * 16 = 12px
+                sm: 14, // 0.875rem * 16 = 14px
+                base: 16, // 1rem * 16 = 16px
+                lg: 18, // 1.125rem * 16 = 18px
+                xl: 20, // 1.25rem * 16 = 20px
+                '2xl': 24, // 1.5rem * 16 = 24px
+                '3xl': 30, // 1.875rem * 16 = 30px
+                '4xl': 36, // 2.25rem * 16 = 36px
+            },
+            weight: {
+                light: 300,
+                normal: 400,
+                medium: 500,
+                semibold: 600,
+                bold: 700,
+                extrabold: 800,
+            },
+        },
+        shape: {
+            border: { radius: 2, width: 1 },
+            shadows: [
+                'none',
+                '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+                '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+                '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+                '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+                '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+                '0 25px 50px -12px rgb(0 0 0 / 0.25)',
+                '0 35px 60px -15px rgb(0 0 0 / 0.3)',
+            ],
+        },
+        shadows: [
+            'none',
+            '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+            '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+            '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+            '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+            '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+            '0 25px 50px -12px rgb(0 0 0 / 0.25)',
+            '0 35px 60px -15px rgb(0 0 0 / 0.3)',
+        ],
+        zIndex: {
+            hide: -1,
+            base: 0,
+            docked: 10,
+            dropdown: 1000,
+            sticky: 1100,
+            banner: 1200,
+            overlay: 1300,
+            modal: 1400,
+            popover: 1500,
+            skipLink: 1600,
+            toast: 1700,
+            tooltip: 1800,
+        },
     },
 };

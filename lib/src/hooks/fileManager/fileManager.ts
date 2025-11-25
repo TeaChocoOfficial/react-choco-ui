@@ -1,5 +1,7 @@
 //-Path: "react-choco-ui/lib/src/hooks/fileManager/fileManager.ts"
 
+import { CListItemType } from '$Compo/template/CList';
+
 export namespace FileManager {
     export const duplicateNameHandler = (
         originalFileName: string,
@@ -161,7 +163,7 @@ export namespace FileManager {
         }
     };
 
-    export const defaultPermissions = {
+    export const defaultPermissions: Permissions = {
         create: true,
         upload: true,
         move: true,
@@ -294,6 +296,11 @@ export namespace FileManager {
 
     export type Callback = (...args: unknown[]) => void;
 
+    export interface Position {
+        x: number;
+        y: number;
+    }
+
     export type SortConfig = {
         key: string;
         direction: sortFilesDirection;
@@ -314,8 +321,15 @@ export namespace FileManager {
         default: React.JSX.Element;
     }
 
+    export type ActionType =
+        | 'rename'
+        | 'delete'
+        | 'uploadFile'
+        | 'previewFile'
+        | 'createFolder';
+
     export interface TriggerAction {
-        show: (type: string) => void;
+        show: (type: ActionType) => void;
         close: () => void;
         isActive: boolean;
         actionType: string | null;
@@ -325,11 +339,11 @@ export namespace FileManager {
         title: string;
         hidden?: boolean;
         divider?: boolean;
-        className?: string;
         selected?: boolean;
         children?: MenuItem[];
-        icon?: React.ReactNode;
-        onClick?: (e: React.MouseEvent<HTMLLIElement>) => void;
+        icon: React.ReactNode;
+        disablePaste?: boolean;
+        onClick?: React.MouseEventHandler<HTMLElement>;
     }
     /*
      * grid is Def

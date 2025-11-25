@@ -195,9 +195,9 @@ export const RenameAction: React.FC<RenameActionProps> = ({
         <>
             <NameInput
                 id={file.name}
+                value={renameFile}
                 ref={outsideClick.ref}
                 maxLength={maxNameLength}
-                value={renameFile}
                 onChange={handleRenameChange}
                 onKeyDown={handleValidateFolderRename}
                 onClick={(e) => e.stopPropagation()}
@@ -225,8 +225,8 @@ export const RenameAction: React.FC<RenameActionProps> = ({
                     <div className="fm-rename-folder-input">
                         <div className="fm-rename-warning">
                             <CIcon
-                                size={70}
-                                color="orange"
+                                fontS={70}
+                                color="warn"
                                 icon="IoWarningOutline"
                             />
                             <div>{t('fileNameChangeWarning')}</div>

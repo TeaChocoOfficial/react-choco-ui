@@ -8,48 +8,44 @@ import { FileManager } from '$Hook/fileManager/fileManager';
 import { useSelection } from '$Hook/fileManager/context/Selection';
 import { useTranslation } from '$Hook/fileManager/context/TranslationProvider';
 import { useShortcutHandler } from '$Hook/fileManager/hook/useShortcutHandler';
-
-interface FileUploadConfig {
-    url: string;
-    method: string;
-    headers: { Authorization: string };
-}
+import { useTriggerActionContext } from '$Hook/fileManager/context/TriggerAction';
 
 interface ActionsProps {
-    fileUploadConfig?: FileUploadConfig;
-    onFileUploading?: (file: File) => void;
-    onFileUploaded?: (file: File, response: any) => void;
+    permissions?: FileManager.Permissions;
     maxFileSize?: number;
     filePreviewPath?: string;
     acceptedFileTypes?: string[];
-    permissions?: FileManager.Permissions;
+    fileUploadConfig?: FileManager.UploadConfig;
+    // triggerAction: FileManager.TriggerAction;
+    onFileUploading?: (file: File) => void;
     onRefresh?: FileManager.Callback;
-    triggerAction: FileManager.TriggerAction;
     onDelete?: (files: FileManager.FileData[]) => void;
+    onFileUploaded?: (file: File, response: any) => void;
     filePreviewComponent?: (file: FileManager.FileData) => React.ReactElement;
 }
 
 interface ActionType {
     title: string;
-    component: React.ReactNode;
     width: string;
+    component: React.ReactNode;
 }
 
 export const Actions: React.FC<ActionsProps> = ({
-    fileUploadConfig,
-    onFileUploading,
-    onFileUploaded,
     onDelete,
     onRefresh,
-    maxFileSize,
-    filePreviewPath,
-    filePreviewComponent,
-    acceptedFileTypes,
-    triggerAction,
     permissions,
+    maxFileSize,
+    // triggerAction,
+    onFileUploaded,
+    onFileUploading,
+    filePreviewPath,
+    fileUploadConfig,
+    acceptedFileTypes,
+    filePreviewComponent,
 }) => {
     const t = useTranslation();
     const { selectedFiles } = useSelection();
+    const triggerAction = useTriggerActionContext();
     const [activeAction, setActiveAction] = useState<ActionType | null>(null);
 
     // Triggers all the keyboard shortcuts based actions
@@ -57,29 +53,30 @@ export const Actions: React.FC<ActionsProps> = ({
 
     const actionTypes: Record<string, ActionType> = {
         uploadFile: {
+            width: '35%',
             title: t('upload'),
             component: (
                 <UploadFileAction
-                    fileUploadConfig={fileUploadConfig}
                     maxFileSize={maxFileSize}
-                    acceptedFileTypes={acceptedFileTypes}
-                    onFileUploading={onFileUploading}
                     onFileUploaded={onFileUploaded}
+                    onFileUploading={onFileUploading}
+                    fileUploadConfig={fileUploadConfig}
+                    acceptedFileTypes={acceptedFileTypes}
                 />
             ),
-            width: '35%',
         },
         delete: {
+            width: '25%',
             title: t('delete'),
             component: (
                 <DeleteAction
-                    triggerAction={triggerAction}
                     onDelete={onDelete}
+                    triggerAction={triggerAction}
                 />
             ),
-            width: '25%',
         },
         previewFile: {
+            width: '50%',
             title: t('preview'),
             component: (
                 <PreviewFileAction
@@ -87,7 +84,6 @@ export const Actions: React.FC<ActionsProps> = ({
                     filePreviewComponent={filePreviewComponent}
                 />
             ),
-            width: '50%',
         },
     };
 

@@ -11,6 +11,7 @@ export * from './components/template/fileManager/CFileManager';
 export * from './components/template/fileManager/CFilesHeader';
 export * from './components/template/CDialog';
 export * from './components/template/CIcon';
+export * from './components/template/CList';
 export * from './components/template/CSplit';
 
 export * from './components/test/CAlert';
@@ -20,8 +21,8 @@ export * from './components/test/CBreadcrumbs';
 export * from './components/test/CChip';
 export * from './components/test/CContainer';
 export * from './components/test/CDrawer';
-export * from './components/test/CIconButton';
-export * from './components/test/CImage';
+export * from './components/ui/CIconButton';
+export * from './components/template/media/CImage';
 export * from './components/test/CInput';
 export * from './components/test/CMenu';
 export * from './components/test/CNavbar';
@@ -49,6 +50,10 @@ import C from './components/index';
 export default C;
 
 export * from './config/ChocoUiProvider';
+
+export * from './custom/color/CColor';
+export * from './custom/color/ChocoColor';
+export * from './custom/color/ChocoShade';
 
 export * from './custom/ChocoStyle';
 export * from './custom/customUi';

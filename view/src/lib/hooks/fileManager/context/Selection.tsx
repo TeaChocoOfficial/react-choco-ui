@@ -28,8 +28,8 @@ const SelectionContext = createContext<SelectionContextType | undefined>(
 
 export const SelectionProvider: React.FC<SelectionProviderProps> = ({
     children,
-    onDownload,
     onSelect,
+    onDownload,
     onSelectionChange,
 }) => {
     const [selectedFiles, setSelectedFiles] = useState<FileManager.FileData[]>(
@@ -60,8 +60,7 @@ export const SelectionProvider: React.FC<SelectionProviderProps> = ({
 
 export const useSelection = (): SelectionContextType => {
     const context = useContext(SelectionContext);
-    if (context === undefined) {
+    if (context === undefined)
         throw new Error('useSelection must be used within a SelectionProvider');
-    }
     return context;
 };
