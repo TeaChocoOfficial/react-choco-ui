@@ -16,6 +16,7 @@
     },
     "scripts": {
         "test": "jest",
+        "vite": "vite",
         "dev": "vite --host 127.0.0.1 --port 5001",
         "sb": "pnpm run storybook",
         "build": "vite build",

@@ -4,10 +4,11 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "build": "tsx main.ts",
+        "lib": "tsx --watch script/lib.ts",
+        "dev": "tsx --watch script/dev.ts",
+        "devs": "tsx --watch script/devs.ts",
+        "build": "tsx --watch script/build.ts",
         "ins": "pnpm i --save && concurrently -n \"Libart,View\" -c \"#0000ff,#ffff00\" \"cd lib/ui && pnpm i --save\" \"cd view && pnpm i --save\"",
-        "dev": "concurrently -n \"Build,Libart,View,Storybook\" -c \"#00ff00,#0000ff,#ffff00,#ff69b4\"  \"tsx main.ts\" \"cd lib/ui && pnpm dev\" \"cd view && pnpm dev\" \"cd view && pnpm storybook\"",
-        "tes": "concurrently -n \"Libart\" -c \"#00ff00\" \"cd lib/ui && pnpm dev\"",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "keywords": [],

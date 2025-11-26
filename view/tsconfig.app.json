@@ -15,28 +15,12 @@
         "moduleDetection": "force",
         "noEmit": true,
         "jsx": "react-jsx",
-        "jsxImportSource": "@emotion/react",
+        "strict": true,
         "paths": {
-            "@teachoco-official/react-choco-ui": [
-                "./src/lib/ui/index.ts"
-            ],
-            "@teachoco-official/react-choco-ui/*": [
-                "./src/lib/ui/*"
-            ],
-            "$Compo/*": [
-                "./src/lib/ui/components/*"
-            ],
-            "$Type/*": [
-                "./src/lib/ui/types/*"
-            ],
-            "$Hook/*": [
-                "./src/lib/ui/hooks/*"
-            ],
-            "$/*": [
-                "./src/lib/ui/*"
+            "$lib/*": [
+                "./src/lib/*"
             ]
         },
-        "strict": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "erasableSyntaxOnly": false,

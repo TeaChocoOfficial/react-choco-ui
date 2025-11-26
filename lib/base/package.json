@@ -1,5 +1,5 @@
 {
-    "name": "@teachoco-official/react-choco-ui",
+    "name": "@teachoco-official/react-choco-base",
     "version": "0.0.1-beta",
     "private": false,
     "description": "javascript npm library create by teachoco-official",
@@ -17,7 +17,8 @@
     "scripts": {
         "prepare": "npm run build",
         "build": "rm -rf ./dist & rollup -c",
-        "dev": "rm -rf ./dist && rollup -c -w",
+        "dev": "rollup -c -w",
+        "clear": "rm -rf ./dist",
         "public": "npm publish --scope=@teachoco-official --access=public",
         "publicforce": "npm publish --scope=@teachoco-official --access=public --force"
     },
